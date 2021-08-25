@@ -8,7 +8,7 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
-// #include "wx/msw/wx.rc"
+#include "utils.h"
 
 // Global vars
 wxString DATA_PATH = "";
