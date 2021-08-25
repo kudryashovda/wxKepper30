@@ -169,5 +169,77 @@ Settings getSettingsFromFile(wxString fn, wxChar dir_separator) {
     return iniSettings;
 }
 
+size_t getMaxFid(const wxTreeCtrl* treeCtrl, wxString user) {
+    size_t maxFid = 0;
+    size_t init_id = 0;
+
+    wxVector<sTreeItem> v;
+    utils::getAllItemsData(treeCtrl, treeCtrl->GetRootItem(), v, init_id);
+
+    for (auto it : v)
+        if (it.fid > maxFid && it.user == user)
+            maxFid = it.fid;
+
+    return maxFid;
+}
+
+/* Danger! Recursia */
+void getTextAllChilds(const wxTreeCtrl* treeCtrl, const wxTreeItemId& rootItem, wxString& str, wxString& tab) {
+    wxTreeItemIdValue cookie;
+    sTreeItem s = utils::getTreeItemData(treeCtrl, rootItem);
+
+    // wxString comments = s.comments;
+    s.comments.Replace("/n", '\n' + tab + '\t');
+    // s.comments.Prepend(tab);
+
+    // str += tab + "'--" + s.name + "(id=" + std::to_string(s.id) +  ')' + '\n' + tab + s.comments + '\n';
+    str += tab + "|--" + s.name + "(id=" + std::to_string(s.id) + ')' + '\t' + s.comments + '\n';
+
+    wxTreeItemId rootChild = treeCtrl->GetFirstChild(rootItem, cookie);
+    while (rootChild.IsOk()) {
+        tab += '\t';
+        getTextAllChilds(treeCtrl, rootChild, str, tab); // danger - recursia
+        rootChild = treeCtrl->GetNextChild(rootItem, cookie);
+    }
+    tab.RemoveLast();
+}
+
+
+void makeReport(wxWindow *parent, const wxTreeCtrl* treeCtrl) {
+    wxArrayTreeItemIds tvi;
+    size_t size = treeCtrl->GetSelections(tvi);
+    if (size == 0)
+        return;
+
+    wxFileDialog* saveReportDialog = new wxFileDialog(parent, _("Save as..."), wxEmptyString, "report.txt", "",
+                                                      wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
+
+    if (saveReportDialog->ShowModal() != wxID_OK)
+        return;
+
+    wxString fn = saveReportDialog->GetPath();
+
+    wxTextFile tfile(fn); // add date
+    if (not tfile.Exists())
+        tfile.Create();
+    tfile.Open();
+    tfile.Clear();
+
+    tfile.AddLine("Report"); // add date
+    tfile.AddLine("");
+
+    for (auto it : tvi) {
+        wxString str = "";
+        wxString tab = "";
+        getTextAllChilds(treeCtrl, it, str, tab);
+        tfile.AddLine(str);
+        tfile.AddLine("");
+    }
+
+    tfile.Write();
+    tfile.Close();
+
+    wxMessageBox("The report was saved");
+}
 
 } // namespace utils

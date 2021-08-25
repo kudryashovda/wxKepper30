@@ -9,6 +9,7 @@
 #include <wx/wx.h>
 
 #include "utils.h"
+#include "logic.h"
 
 // Global vars
 wxString DATA_PATH = "";
@@ -46,8 +47,6 @@ long MY_STYLE = wxSTATIC_BORDER;
 #define ID_TEST 2009
 #define ID_SORT 2010
 /* elements in popup menu */
-
-
 
 #define ELEMENTS_IN_FILE_STRING 6
 
@@ -114,7 +113,6 @@ private:
     void appendNewItem(wxTreeItemId& item);
     void saveTree();
     void showTreeItemData(const wxTreeItemId& srcItem);
-    size_t getMaxFid();
     void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
     void deleteItems();
     void cut();
@@ -128,8 +126,8 @@ private:
     void expandAllParents(const wxTreeItemId item);
     void searchStr();
     void dublicate();
-    void makeReport();
-    void getTextAllChilds(const wxTreeItemId& rootItem, wxString& str, wxString& tab);
+    // void makeReport();
+    // void getTextAllChilds(const wxTreeItemId& rootItem, wxString& str, wxString& tab);
     void moveUp();
     void moveDown();
     void sortItems(const wxTreeItemId& rootItem);
@@ -460,6 +458,7 @@ void MainFrame::onCreateFrame() {
     utils::setTreeItemData(treeCtrl, rootItem, ST_ROOT);
 
     utils::loadTree(FILE_NAME, treeCtrl, rootItem, ELEMENTS_IN_FILE_STRING);
+
     treeCtrl->Expand(rootItem);
     treeCtrl->SetFocusedItem(rootItem);
 }
@@ -507,7 +506,7 @@ void MainFrame::OnPopupClick(wxCommandEvent& evt) {
         cut();
         break;
     case ID_MAKE_REPORT:
-        makeReport();
+        utils::makeReport(this, treeCtrl);
         break;
     case ID_SORT:
         sortItems(item);
@@ -533,7 +532,7 @@ void MainFrame::appendNewItem(wxTreeItemId& item) {
     if (st.name == "")
         return;
 
-    size_t maxId = getMaxFid();
+    size_t maxId = utils::getMaxFid(treeCtrl, USER);
 
     for (auto& it : tvi) {
         wxTreeItemId newItem = treeCtrl->AppendItem(it, st.name);
@@ -658,20 +657,6 @@ void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
     saveTextToItem(item);
 }
 
-size_t MainFrame::getMaxFid() {
-    size_t maxFid = 0;
-    size_t init_id = 0;
-
-    wxVector<sTreeItem> v;
-    utils::getAllItemsData(treeCtrl, treeCtrl->GetRootItem(), v, init_id);
-
-    for (auto it : v)
-        if (it.fid > maxFid && it.user == USER)
-            maxFid = it.fid;
-
-    return maxFid;
-}
-
 void MainFrame::moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem) {
     sTreeItem ss = utils::getTreeItemData(treeCtrl, srcItem);
     sTreeItem sd = utils::getTreeItemData(treeCtrl, destItem);
@@ -760,7 +745,7 @@ void MainFrame::cut() {
         return;
 
     sTreeItem s_parent = utils::getTreeItemData(treeCtrl, item);
-    size_t maxId = getMaxFid();
+    size_t maxId = utils::getMaxFid(treeCtrl, USER);
 
     wxTreeItemId addedItem;
     for (size_t i = 0; i < ni; ++i) {
@@ -1112,7 +1097,7 @@ void MainFrame::takePhoto() {
 }
 
 void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
-    wxNumberEntryDialog dlg(this, "", "Enter ID number", "Goto ID", 0, 0, getMaxFid());
+    wxNumberEntryDialog dlg(this, "", "Enter ID number", "Goto ID", 0, 0, utils::getMaxFid(treeCtrl, USER));
     if (dlg.ShowModal() != wxID_OK)
         return;
 
@@ -1202,7 +1187,7 @@ void MainFrame::dublicate() {
     wxTreeItemId newItem = treeCtrl->AppendItem(pItem, s_item.name);
 
     s_item.itemId = newItem;
-    s_item.fid = getMaxFid() + 1;
+    s_item.fid = utils::getMaxFid(treeCtrl, USER) + 1;
 
     utils::setTreeItemData(treeCtrl, newItem, s_item);
 
@@ -1212,64 +1197,6 @@ void MainFrame::dublicate() {
     showTreeItemData(newItem);
 
     saveTree();
-}
-
-void MainFrame::makeReport() {
-    wxArrayTreeItemIds tvi;
-    size_t size = treeCtrl->GetSelections(tvi);
-    if (size == 0)
-        return;
-
-    wxFileDialog* saveReportDialog = new wxFileDialog(this, _("Save as..."), wxEmptyString, "report.txt", "",
-                                                      wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
-
-    if (saveReportDialog->ShowModal() != wxID_OK)
-        return;
-
-    wxString fn = saveReportDialog->GetPath();
-
-    wxTextFile tfile(fn); // add date
-    if (not tfile.Exists())
-        tfile.Create();
-    tfile.Open();
-    tfile.Clear();
-
-    tfile.AddLine("Report"); // add date
-    tfile.AddLine("");
-
-    for (auto it : tvi) {
-        wxString str = "";
-        wxString tab = "";
-        getTextAllChilds(it, str, tab);
-        tfile.AddLine(str);
-        tfile.AddLine("");
-    }
-
-    tfile.Write();
-    tfile.Close();
-
-    wxMessageBox("The report was saved");
-}
-
-/* Danger! Recursia */
-void MainFrame::getTextAllChilds(const wxTreeItemId& rootItem, wxString& str, wxString& tab) {
-    wxTreeItemIdValue cookie;
-    sTreeItem s = utils::getTreeItemData(treeCtrl, rootItem);
-
-    // wxString comments = s.comments;
-    s.comments.Replace("/n", '\n' + tab + '\t');
-    // s.comments.Prepend(tab);
-
-    // str += tab + "'--" + s.name + "(id=" + std::to_string(s.id) +  ')' + '\n' + tab + s.comments + '\n';
-    str += tab + "|--" + s.name + "(id=" + std::to_string(s.id) + ')' + '\t' + s.comments + '\n';
-
-    wxTreeItemId rootChild = treeCtrl->GetFirstChild(rootItem, cookie);
-    while (rootChild.IsOk()) {
-        tab += '\t';
-        getTextAllChilds(rootChild, str, tab); // danger - recursia
-        rootChild = treeCtrl->GetNextChild(rootItem, cookie);
-    }
-    tab.RemoveLast();
 }
 
 void MainFrame::onPressTCkey(wxKeyEvent& event) {
