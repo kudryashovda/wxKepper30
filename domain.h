@@ -2,6 +2,13 @@
 
 #include <wx/treectrl.h>
 
+struct Settings {
+    wxString dataPath;
+    wxString dataFilename;
+    wxString templateFileName;
+    wxString userName;
+};
+
 struct sTreeItem {
     sTreeItem(){};
     sTreeItem(wxTreeItemId itemId_,

@@ -24,7 +24,7 @@ wxString USER = "USER";
 
 wxString VERSION = "22a";
 
-bool IS_TRIAL = false; // false - is free; true - is trial
+bool IS_TRIAL = false;                      // false - is free; true - is trial
 wxString TRIAL_DATE = "9-29-2020 23:59:59"; // for trial
 
 /* buttons and edits style */
@@ -47,17 +47,11 @@ long MY_STYLE = wxSTATIC_BORDER;
 #define ID_SORT 2010
 /* elements in popup menu */
 
-struct settings {
-    wxString dataPath;
-    wxString dataFilename;
-    wxString templateFileName;
-    wxString userName;
-} iniSettings;
+
 
 #define ELEMENTS_IN_FILE_STRING 6
 
 wxTreeItemId DRAGGED_ITEM;
-
 
 class MyApp : public wxApp {
 public:
@@ -117,16 +111,8 @@ private:
     void onPressBtnLink(wxCommandEvent& event);
 
     void bindEvents();
-    // void checkTrial();
-    settings getSettingsFromFile(wxString str);
     void appendNewItem(wxTreeItemId& item);
-    // sTreeItem getTreeItemData(const wxTreeItemId& item);
-    // void setTreeItemData(const wxTreeItemId& item, const sTreeItem& st);
-    void saveBrunch(wxString filename, const wxTreeItemId& item);
     void saveTree();
-    void loadTree(wxString filename, const wxTreeItemId& item2connect);
-    // void getAllItemsData(const wxTreeItemId& srcItem, wxVector<sTreeItem>& vs, size_t& init_id);
-    sTreeItem s_tokenizer(wxString str, wxString delim);
     void showTreeItemData(const wxTreeItemId& srcItem);
     size_t getMaxFid();
     void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
@@ -155,10 +141,6 @@ private:
     void createNewObjectFile(const wxTreeItemId& item, wxString objName);
     void takePhoto();
 };
-
-
-
-
 
 /* class to store item's data inside treectrl */
 
@@ -271,8 +253,12 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
     ws.SetHeight(ws.GetHeight() * 2);
     ws.SetWidth(ws.GetWidth() * 2);
 
+#if defined(__WINDOWS__)
+    this->SetMinClientSize(ws);
+#else
     SetMinSize(ws); // linux
-    //this->SetMinClientSize(ws);
+#endif
+
     SetClientSize(ws); //ClientToWindowSize(ws));
 
     dlgEdtText->SetFocus();
@@ -283,7 +269,7 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
 bool MyApp::OnInit() {
     wxSetlocale(LC_ALL, "");
 
-    IS_TRIAL = utils::CheckTrial(TRIAL_DATE); // uncomment for production
+    // IS_TRIAL = utils::CheckTrial(TRIAL_DATE); // uncomment for production
 
     wxString trial_msg;
     if (IS_TRIAL) {
@@ -292,10 +278,7 @@ bool MyApp::OnInit() {
 
     wxString title("KEEP version " + VERSION + trial_msg);
     MainFrame* frame = new MainFrame(title);
-    frame->Show();
-
-    frame->SetPosition(wxPoint(0, 0));
-    frame->Center(wxHORIZONTAL);
+    frame->Show(true);
 
     return true;
 }
@@ -307,9 +290,9 @@ MainFrame::MainFrame(const wxString& title)
     SetIcon(wxICON(icon)); // windows only. icon file mt be located
 #endif
 
-    wxString iniFileLocation = wxGetCwd() + DIR_SEPARATOR + "settings.ini";
+    wxString iniFileLocation = wxGetCwd() + DIR_SEPARATOR + "Settings.ini";
 
-    iniSettings = getSettingsFromFile(iniFileLocation);
+    Settings iniSettings = utils::getSettingsFromFile(iniFileLocation, DIR_SEPARATOR);
 
     DATA_PATH = iniSettings.dataPath;
     USER = iniSettings.userName;
@@ -433,12 +416,10 @@ MainFrame::MainFrame(const wxString& title)
 
     pnl->SetSizer(borderSizer);
 
-    mainSizer->Fit(this);
+    mainSizer->Fit(this); // resize (fit) main window based on elements inside sizer
 
-    wxSize ws = this->GetSize();
-    ws.SetHeight(ws.GetWidth() / 4 * 3);
-
-    SetMinSize(ws);
+    SetMinSize(wxSize(800, 800));
+    Centre(wxHORIZONTAL);
 
     onCreateFrame();
 }
@@ -478,7 +459,7 @@ void MainFrame::onCreateFrame() {
     ST_ROOT.user = USER;
     utils::setTreeItemData(treeCtrl, rootItem, ST_ROOT);
 
-    loadTree(FILE_NAME, rootItem);
+    utils::loadTree(FILE_NAME, treeCtrl, rootItem, ELEMENTS_IN_FILE_STRING);
     treeCtrl->Expand(rootItem);
     treeCtrl->SetFocusedItem(rootItem);
 }
@@ -569,52 +550,6 @@ void MainFrame::appendNewItem(wxTreeItemId& item) {
     saveTree();
 }
 
-void MainFrame::saveBrunch(wxString filename, const wxTreeItemId& item) {
-    wxVector<sTreeItem> v;
-
-    size_t init_id = 0;
-    utils::getAllItemsData(treeCtrl, item, v, init_id);
-
-    wxTextFile tfile(filename);
-    if (not tfile.Exists())
-        tfile.Create();
-    tfile.Open();
-    tfile.Clear();
-
-    for (auto it : v) {
-        it.name.ToUTF8();
-        it.name.Replace('\t', " ");
-
-        it.comments.ToUTF8();
-        it.comments.Replace('\t', " ");
-        it.comments.Replace('\n', "/n"); // danger - real info may corrupt
-
-        wxString str = wxString::Format(wxT("%zu\t%zu\t%s\t%zu\t%s\t%s"), it.id, it.pid, it.user, it.fid, it.name, it.comments);
-        tfile.AddLine(str);
-    }
-
-    tfile.Write();
-    tfile.Close();
-}
-
-// void MainFrame::getAllItemsData(const wxTreeItemId& srcItem, wxVector<sTreeItem>& vs, size_t& init_id) {
-//     wxTreeItemIdValue cookie;
-
-//     sTreeItem ss;
-//     ss = getTreeItemData(srcItem);
-
-//     ss.id = vs.size();
-//     ss.pid = init_id;
-
-//     vs.push_back(ss);
-
-//     wxTreeItemId srcChild = treeCtrl->GetFirstChild(srcItem, cookie);
-//     while (srcChild.IsOk()) {
-//         getAllItemsData(srcChild, vs, ss.id); // danger - recursia
-//         srcChild = treeCtrl->GetNextChild(srcItem, cookie);
-//     }
-// }
-
 void MainFrame::OnBeginDrag(wxTreeEvent& event) {
     DRAGGED_ITEM = event.GetItem();
 
@@ -650,66 +585,6 @@ void MainFrame::OnEndDrag(wxTreeEvent& event) {
     wxTreeItemIdValue cookie;
     treeCtrl->Expand(itemDst);
     treeCtrl->SetFocusedItem(treeCtrl->GetFirstChild(itemDst, cookie));
-}
-
-void MainFrame::loadTree(wxString filename, const wxTreeItemId& item2connect) {
-
-    wxVector<sTreeItem> vs;
-    wxTextFile tfile(filename);
-    if (!tfile.Exists())
-        return;
-
-    tfile.Open();
-
-    for (size_t i = 1, s = tfile.GetLineCount(); i < s; ++i) {
-        sTreeItem sti = s_tokenizer(tfile[i], '\t');
-        if (sti == ST_ERROR)
-            continue;
-        vs.push_back(sti);
-    }
-
-    tfile.Close();
-
-    if (vs.size() == 0)
-        return;
-
-    for (auto& it : vs) {
-        it.itemId = treeCtrl->AppendItem(item2connect, it.name);
-        utils::setTreeItemData(treeCtrl, it.itemId, it);
-    }
-
-    for (auto& it : vs) {      // pid
-        for (auto& it2 : vs) { // id
-            if (it.pid == it2.id) {
-                treeCtrl->Delete(it.itemId);
-                it.itemId = treeCtrl->AppendItem(it2.itemId, it.name);
-                utils::setTreeItemData(treeCtrl, it.itemId, it);
-            }
-        }
-    }
-}
-
-sTreeItem MainFrame::s_tokenizer(wxString str, wxString delim) {
-    wxVector<wxString> vs;
-    size_t pos;
-    wxString token;
-
-    if (str.Find(delim) == wxNOT_FOUND)
-        return ST_ERROR; // if no delim string exit
-
-    do {
-        pos = str.find_first_of(delim);
-        token = str.substr(0, pos);
-        vs.push_back(token);
-        str = str.substr(pos + 1);
-    } while (pos != wxString::npos);
-
-    if (vs.size() != ELEMENTS_IN_FILE_STRING)
-        return ST_ERROR;
-
-    sTreeItem st(NULL, wxAtoi(vs[0]), wxAtoi(vs[1]), vs[2], wxAtoi(vs[3]), vs[4], vs[5]);
-
-    return st;
 }
 
 void MainFrame::showTreeItemData(const wxTreeItemId& item) {
@@ -933,7 +808,7 @@ void MainFrame::exportSelectedBrunch(const wxTreeItemId& item, wxString fn) {
 
     utils::getAllItemsData(treeCtrl, item, vs, init_id);
 
-    saveBrunch(fn, item);
+    utils::saveBrunch(fn, treeCtrl, item);
 }
 
 void MainFrame::onPressbtnImport(wxCommandEvent& event) {
@@ -957,12 +832,12 @@ void MainFrame::importDialogStart() {
 }
 
 void MainFrame::importSelectedBrunch(const wxTreeItemId& item, wxString fn) {
-    loadTree(fn, item);
+    utils::loadTree(fn, treeCtrl, item, ELEMENTS_IN_FILE_STRING);
     saveTree();
 }
 
 void MainFrame::saveTree() {
-    saveBrunch(FILE_NAME, treeCtrl->GetRootItem());
+    utils::saveBrunch(FILE_NAME, treeCtrl, treeCtrl->GetRootItem());
 }
 
 void MainFrame::onPressbtnAdd(wxCommandEvent& event) {
@@ -986,42 +861,6 @@ void MainFrame::renameItem(wxTreeItemId& item) {
     showTreeItemData(item);
 
     saveTree();
-}
-
-settings MainFrame::getSettingsFromFile(wxString fn) {
-    settings iniSettings;
-
-    iniSettings.dataPath = wxGetCwd() + DIR_SEPARATOR;
-    iniSettings.dataFilename = "data.txt";
-    iniSettings.templateFileName = "templates.txt";
-    iniSettings.userName = "USER";
-
-    wxTextFile tfile(fn);
-    if (!tfile.Exists())
-        return iniSettings;
-
-    tfile.Open();
-
-    wxVector<wxString> vs;
-    wxString line_str = "";
-
-    for (size_t i = 0, s = tfile.GetLineCount(); i < s; ++i) {
-        line_str = tfile[i];
-        line_str.ToUTF8();
-        vs.push_back(line_str);
-    }
-
-    tfile.Close();
-
-    if (vs.size() != 4)
-        return iniSettings;
-
-    iniSettings.dataPath = vs[0];
-    iniSettings.dataFilename = vs[1];
-    iniSettings.templateFileName = vs[2];
-    iniSettings.userName = vs[3];
-
-    return iniSettings;
 }
 
 void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
