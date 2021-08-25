@@ -1,0 +1,42 @@
+
+aaaaaaaa ICON "icon.ico"
+
+    // this icon is used with wxFrame::SetIcon()
+    // all "icon" - are the same
+    icon ICON "icon.ico"
+
+#include <windows.h>
+
+#define wxUSE_RC_MANIFEST 1
+#define WX_CPU_AMD64
+
+#if !defined(wxUSE_NO_MANIFEST) || (wxUSE_NO_MANIFEST == 0)
+
+#if defined(wxUSE_RC_MANIFEST) && wxUSE_RC_MANIFEST
+
+// see "about isolated applications" topic in MSDN
+#ifdef ISOLATION_AWARE_ENABLED
+#define wxMANIFEST_ID 2
+#else
+#define wxMANIFEST_ID 1
+#endif
+
+#if defined(WX_CPU_AMD64)
+    wxMANIFEST_ID 24 "wx/msw/amd64.manifest"
+#elif defined(WX_CPU_IA64)
+    wxMANIFEST_ID 24 "wx/msw/ia64.manifest"
+#elif defined(WX_CPU_X86)
+    wxMANIFEST_ID 24 "wx/msw/wx.manifest"
+#else
+// Notice that if the manifest is included, WX_CPU_XXX constant corresponding
+// to the architecture we're compiling for must be defined. This can be done
+// either manually in your make/project file or by configuring the resource
+// compiler paths to search in $(WXWIN)/lib/$(COMPILER_PREFIX)_lib/mswu[d]
+// directory for its include files, as wx/msw/rcdefs.h file in this directory
+// is generated during wxWidgets build and contains the correct definition.
+#error "One of WX_CPU_XXX constants must be defined. See comment above."
+#endif
+
+#endif // wxUSE_RC_MANIFEST
+
+#endif // !defined(wxUSE_NO_MANIFEST) || (wxUSE_NO_MANIFEST == 0)
