@@ -13,10 +13,8 @@
 
 // Global vars
 wxString DATA_PATH = "";
-wxString TEMPLATE_PATH = "";
 
-wxString FILE_NAME = "null";         // dataFile location
-wxString TEMPLATE_FILENAME = "null"; // template location
+wxString FILE_NAME = "null"; // dataFile location
 /* real filepath is formed in wxFrame costructor */
 
 wxChar DIR_SEPARATOR = wxFileName::GetPathSeparator();
@@ -62,6 +60,9 @@ IMPLEMENT_APP(MyApp)
 class MainFrame : public wxFrame {
 public:
     MainFrame(const wxString& title);
+    ~MainFrame() {
+        delete th; // tree_holder class
+    }
 
 private:
     /* define widgets */
@@ -82,6 +83,8 @@ private:
     wxTextCtrl *tc, *edtName, *edtId, *edtSearch;
 
     wxListBox* listBox;
+
+    logic::TreeHolder* th;
 
     /* Events */
     void onCreateFrame();
@@ -110,6 +113,9 @@ private:
     void onPressBtnLink(wxCommandEvent& event);
 
     void bindEvents();
+
+    void AppendToSelectedItems();
+
     void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
     void deleteItems();
     void cut();
@@ -122,10 +128,8 @@ private:
     void showItemDataById(size_t itemId);
     void expandAllParents(const wxTreeItemId item);
     void searchStr();
-    void dublicate();
     void moveUp();
     void moveDown();
-    void sortItems(const wxTreeItemId& rootItem);
     void saveTextToItem(const wxTreeItemId item);
 
     void addObjectsToItem(const wxTreeItemId& item);
@@ -167,7 +171,6 @@ MainFrame::MainFrame(const wxString& title)
     USER = iniSettings.userName;
 
     FILE_NAME = DATA_PATH + iniSettings.dataFilename;
-    TEMPLATE_FILENAME = DATA_PATH + iniSettings.templateFileName;
 
     pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | MY_STYLE);
 
@@ -328,7 +331,10 @@ void MainFrame::onCreateFrame() {
     ST_ROOT.user = USER;
     logic::setTreeItemData(treeCtrl, rootItem, ST_ROOT);
 
-    logic::loadTree(FILE_NAME, treeCtrl, rootItem, ELEMENTS_IN_FILE_STRING);
+    th = new logic::TreeHolder(this, treeCtrl, USER); // delete in destuctor
+    th->SetFileName(DATA_PATH, FILE_NAME, ELEMENTS_IN_FILE_STRING);
+
+    th->loadTree(rootItem);
 
     treeCtrl->Expand(rootItem);
     treeCtrl->SetFocusedItem(rootItem);
@@ -351,15 +357,36 @@ void MainFrame::OnListRightClick(wxTreeEvent& evt) {
     PopupMenu(&mnu);
 }
 
+void MainFrame::AppendToSelectedItems() {
+    wxArrayTreeItemIds dest_tvi;
+    size_t size = treeCtrl->GetSelections(dest_tvi);
+    if (size == 0)
+        return;
+
+    DlgAppendItem dlg(this, wxID_ANY, "Add object", MY_STYLE);
+    if (dlg.ShowModal() == wxID_CANCEL)
+        return;
+
+    sTreeItem st;
+    st.name = dlg.dlgEdtText->GetValue();
+    st.comments = dlg.dlgComments->GetValue();
+
+    if (st.name == "") {
+        return;
+    }
+
+    th->AppendItem(dest_tvi, st);
+}
+
 void MainFrame::OnPopupClick(wxCommandEvent& evt) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
 
     switch (evt.GetId()) {
     case ID_ADD_ITEM:
-        logic::appendNewItem(this, treeCtrl, item, USER, MY_STYLE, FILE_NAME);
+        AppendToSelectedItems();
         break;
     case ID_DUBLICATE_ITEM:
-        dublicate();
+        th->dublicate(item);
         break;
     case ID_DELETE_ITEM:
         deleteItems();
@@ -377,15 +404,15 @@ void MainFrame::OnPopupClick(wxCommandEvent& evt) {
         cut();
         break;
     case ID_MAKE_REPORT:
-        logic::makeReport(this, treeCtrl);
+        th->makeReport();
         break;
     case ID_SORT:
-        sortItems(item);
+        // logic::sortItems(treeCtrl, item, FILE_NAME);
+        th->sortItems(item);
         break;
     }
 }
 // Popup menu end
-
 
 void MainFrame::OnBeginDrag(wxTreeEvent& event) {
     DRAGGED_ITEM = event.GetItem();
@@ -417,7 +444,7 @@ void MainFrame::OnEndDrag(wxTreeEvent& event) {
     treeCtrl->DeleteChildren(itemSrc);
     treeCtrl->Delete(itemSrc);
 
-    logic::saveTree(FILE_NAME, treeCtrl);
+    th->saveTree();
 
     wxTreeItemIdValue cookie;
     treeCtrl->Expand(itemDst);
@@ -434,8 +461,7 @@ void MainFrame::saveTextToItem(const wxTreeItemId item) {
 
     logic::setTreeItemData(treeCtrl, item, st);
 
-    logic::saveTree(FILE_NAME, treeCtrl);
-
+    th->saveTree();
 
     tc->SetModified(false);
     edtName->SetModified(false);
@@ -525,8 +551,7 @@ void MainFrame::deleteItems() {
     logic::showTreeItemData(treeCtrl, firstItemParent, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 
     treeCtrl->SelectItem(firstItemParent);
-    logic::saveTree(FILE_NAME, treeCtrl);
-
+    th->saveTree();
 }
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
@@ -567,7 +592,7 @@ void MainFrame::cut() {
         logic::setTreeItemData(treeCtrl, addedItem, s_child);
     }
 
-    logic::saveTree(FILE_NAME, treeCtrl);
+    th->saveTree();
 
     treeCtrl->Expand(item);
 }
@@ -602,7 +627,8 @@ void MainFrame::exportSelectedBrunch(const wxTreeItemId& item, wxString fn) {
 
     logic::getAllItemsData(treeCtrl, item, vs, init_id);
 
-    logic::saveBrunch(fn, treeCtrl, item);
+    // logic::saveBrunch(fn, treeCtrl, item);
+    th->saveBrunch(item);
 }
 
 void MainFrame::onPressbtnImport(wxCommandEvent& event) {
@@ -626,13 +652,13 @@ void MainFrame::importDialogStart() {
 }
 
 void MainFrame::importSelectedBrunch(const wxTreeItemId& item, wxString fn) {
-    logic::loadTree(fn, treeCtrl, item, ELEMENTS_IN_FILE_STRING);
-    logic::saveTree(FILE_NAME, treeCtrl);
+    th->loadTree(item);
+    th->saveTree();
 }
 
 void MainFrame::onPressbtnAdd(wxCommandEvent& event) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
-    logic::appendNewItem(this, treeCtrl, item, USER, MY_STYLE, FILE_NAME);
+    AppendToSelectedItems();
 }
 
 void MainFrame::renameItem(wxTreeItemId& item) {
@@ -650,7 +676,7 @@ void MainFrame::renameItem(wxTreeItemId& item) {
     logic::setTreeItemData(treeCtrl, item, st);
     logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 
-    logic::saveTree(FILE_NAME, treeCtrl);
+    th->saveTree();
 }
 
 void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
@@ -981,29 +1007,6 @@ void MainFrame::onPressbtnSearch(wxCommandEvent& event) {
     searchStr();
 }
 
-void MainFrame::dublicate() {
-    wxTreeItemId item = treeCtrl->GetFocusedItem();
-    if (!item.IsOk())
-        return;
-
-    wxTreeItemId pItem = treeCtrl->GetItemParent(item);
-
-    sTreeItem s_item = logic::getTreeItemData(treeCtrl, item);
-    wxTreeItemId newItem = treeCtrl->AppendItem(pItem, s_item.name);
-
-    s_item.itemId = newItem;
-    s_item.fid = logic::getMaxFid(treeCtrl, USER) + 1;
-
-    logic::setTreeItemData(treeCtrl, newItem, s_item);
-
-    treeCtrl->UnselectAll();
-    treeCtrl->SelectItem(newItem, true);
-    treeCtrl->SetFocusedItem(newItem);
-    logic::showTreeItemData(treeCtrl, newItem, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
-
-    logic::saveTree(FILE_NAME, treeCtrl);
-}
-
 void MainFrame::onPressTCkey(wxKeyEvent& event) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
 
@@ -1013,7 +1016,7 @@ void MainFrame::onPressTCkey(wxKeyEvent& event) {
     const int i_keyCode = 73;
 
     if (event.GetKeyCode() == d_keyCode && event.GetModifiers() == wxACCEL_CTRL) {
-        dublicate();
+        th->dublicate(item);
     }
 
     if (event.GetKeyCode() == WXK_DELETE) {
@@ -1021,7 +1024,7 @@ void MainFrame::onPressTCkey(wxKeyEvent& event) {
     }
 
     if (event.GetKeyCode() == a_keyCode && event.GetModifiers() == wxACCEL_CTRL) {
-        logic::appendNewItem(this, treeCtrl, item, USER, MY_STYLE, FILE_NAME);
+        AppendToSelectedItems();
     }
 
     if (event.GetKeyCode() == u_keyCode && event.GetModifiers() == wxACCEL_CTRL) {
@@ -1082,10 +1085,4 @@ void MainFrame::moveDown() {
 
 void MainFrame::onPressbtnCut(wxCommandEvent& event) {
     cut();
-}
-
-void MainFrame::sortItems(const wxTreeItemId& rootItem) {
-    treeCtrl->SortChildren(rootItem);
-
-    logic::saveTree(FILE_NAME, treeCtrl);
 }

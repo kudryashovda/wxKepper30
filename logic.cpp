@@ -64,13 +64,13 @@ size_t getMaxFid(const wxTreeCtrl* treeCtrl, wxString user) {
     return maxFid;
 }
 
-void saveBrunch(wxString filename, const wxTreeCtrl* treeCtrl, const wxTreeItemId& item) {
+void TreeHolder::saveBrunch(const wxTreeItemId& head_item) {
     wxVector<sTreeItem> v;
 
     size_t init_id = 0;
-    logic::getAllItemsData(treeCtrl, item, v, init_id);
+    logic::getAllItemsData(treeCtrl_, head_item, v, init_id);
 
-    wxTextFile tfile(filename);
+    wxTextFile tfile(filename_);
     if (not tfile.Exists())
         tfile.Create();
     tfile.Open();
@@ -97,17 +97,17 @@ void setTreeItemData(wxTreeCtrl* treeCtrl, const wxTreeItemId& item, const sTree
     treeCtrl->SetItemText(item, st.name);
 }
 
-void loadTree(wxString filename, wxTreeCtrl* treeCtrl, const wxTreeItemId& item2connect, size_t elements) {
+void TreeHolder::loadTree(const wxTreeItemId& item2connect) {
 
     wxVector<sTreeItem> vs;
-    wxTextFile tfile(filename);
+    wxTextFile tfile(filename_);
     if (!tfile.Exists())
         return;
 
     tfile.Open();
 
     for (size_t i = 1, s = tfile.GetLineCount(); i < s; ++i) {
-        sTreeItem sti = utils::s_tokenizer(tfile[i], '\t', elements);
+        sTreeItem sti = utils::s_tokenizer(tfile[i], '\t', elements_);
         if (sti == ST_ERROR)
             continue;
         vs.push_back(sti);
@@ -119,16 +119,16 @@ void loadTree(wxString filename, wxTreeCtrl* treeCtrl, const wxTreeItemId& item2
         return;
 
     for (auto& it : vs) {
-        it.itemId = treeCtrl->AppendItem(item2connect, it.name);
-        logic::setTreeItemData(treeCtrl, it.itemId, it);
+        it.itemId = treeCtrl_->AppendItem(item2connect, it.name);
+        logic::setTreeItemData(treeCtrl_, it.itemId, it);
     }
 
     for (auto& it : vs) {      // pid
         for (auto& it2 : vs) { // id
             if (it.pid == it2.id) {
-                treeCtrl->Delete(it.itemId);
-                it.itemId = treeCtrl->AppendItem(it2.itemId, it.name);
-                logic::setTreeItemData(treeCtrl, it.itemId, it);
+                treeCtrl_->Delete(it.itemId);
+                it.itemId = treeCtrl_->AppendItem(it2.itemId, it.name);
+                logic::setTreeItemData(treeCtrl_, it.itemId, it);
             }
         }
     }
@@ -171,45 +171,67 @@ void makeReport(wxWindow* parent, const wxTreeCtrl* treeCtrl) {
     wxMessageBox("The report was saved");
 }
 
-void appendNewItem(wxWindow* parent, wxTreeCtrl* treeCtrl, wxTreeItemId& item, wxString user, long my_style, wxString filename) {
+void TreeHolder::makeReport() {
     wxArrayTreeItemIds tvi;
-    size_t size = treeCtrl->GetSelections(tvi);
+    size_t size = treeCtrl_->GetSelections(tvi);
     if (size == 0)
         return;
 
-    DlgAppendItem dlg(parent, wxID_ANY, "Add object", my_style);
-    if (dlg.ShowModal() == wxID_CANCEL)
+    wxFileDialog* saveReportDialog = new wxFileDialog(parent_, _("Save as..."), wxEmptyString, "report.txt", "",
+                                                      wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
+
+    if (saveReportDialog->ShowModal() != wxID_OK)
         return;
 
-    sTreeItem st;
-    st.name = dlg.dlgEdtText->GetValue();
-    st.comments = dlg.dlgComments->GetValue();
+    wxString fn = saveReportDialog->GetPath();
 
-    if (st.name == "")
-        return;
+    wxTextFile tfile(fn); // add date
+    if (not tfile.Exists())
+        tfile.Create();
+    tfile.Open();
+    tfile.Clear();
 
-    size_t maxId = logic::getMaxFid(treeCtrl, user);
+    tfile.AddLine("Report"); // add date
+    tfile.AddLine("");
 
-    for (auto& it : tvi) {
-        wxTreeItemId newItem = treeCtrl->AppendItem(it, st.name);
+    for (auto it : tvi) {
+        wxString str = "";
+        wxString tab = "";
+        getTextAllChilds(treeCtrl_, it, str, tab);
+        tfile.AddLine(str);
+        tfile.AddLine("");
+    }
+
+    tfile.Write();
+    tfile.Close();
+
+    wxMessageBox("The report was saved");
+}
+
+void TreeHolder::AppendItem(const wxArrayTreeItemIds& dest_tvi, sTreeItem st) {
+    size_t maxId = logic::getMaxFid(treeCtrl_, user_name_);
+
+    for (auto& it : dest_tvi) {
+        wxTreeItemId newItem = treeCtrl_->AppendItem(it, st.name);
         st.itemId = newItem;
         st.fid = ++maxId;
-        logic::setTreeItemData(treeCtrl, newItem, st);
+        logic::setTreeItemData(treeCtrl_, newItem, st);
 
-        treeCtrl->Expand(it);
-        treeCtrl->SelectItem(it, false);
-        treeCtrl->SetFocusedItem(newItem);
+        treeCtrl_->Expand(it);
+        treeCtrl_->SelectItem(it, false);
+        treeCtrl_->SetFocusedItem(newItem);
         // logic::showTreeItemData(treeCtrl, newItem, tc, edtName);
     }
 
-    logic::saveTree(filename, treeCtrl);
+    this->saveTree();
 }
 
-void saveTree(wxString filename, const wxTreeCtrl *treeCtrl) {
-    logic::saveBrunch(filename, treeCtrl, treeCtrl->GetRootItem());
+
+void TreeHolder::saveTree() {
+    this->saveBrunch(treeCtrl_->GetRootItem());
 }
 
-void showTreeItemData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& item, wxTextCtrl *tc, wxTextCtrl *edtName, wxTextCtrl *edtId, wxListBox* listBox, wxString data_path, wxChar dir_separator) {
+void showTreeItemData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& item, wxTextCtrl* tc, wxTextCtrl* edtName, wxTextCtrl* edtId, wxListBox* listBox, wxString data_path, wxChar dir_separator) {
     sTreeItem sti = logic::getTreeItemData(treeCtrl, item);
     if (sti == ST_ERROR)
         return;
@@ -238,6 +260,29 @@ void showTreeItemData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& item, wxTe
 
     if (listBox->GetCount() > 0)
         listBox->Select(0);
+}
+
+void TreeHolder::sortItems(const wxTreeItemId& head_item) {
+    treeCtrl_->SortChildren(head_item);
+
+    this->saveTree();
+}
+
+void TreeHolder::dublicate(const wxTreeItemId& item) {
+    if (!item.IsOk())
+        return;
+
+    wxTreeItemId pItem = treeCtrl_->GetItemParent(item);
+
+    sTreeItem s_item = logic::getTreeItemData(treeCtrl_, item);
+    wxTreeItemId newItem = treeCtrl_->AppendItem(pItem, s_item.name);
+
+    s_item.itemId = newItem;
+    s_item.fid = logic::getMaxFid(treeCtrl_, user_name_) + 1;
+
+    logic::setTreeItemData(treeCtrl_, newItem, s_item);
+
+    this->saveTree();
 }
 
 } // namespace logic
