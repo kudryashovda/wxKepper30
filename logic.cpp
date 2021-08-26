@@ -171,4 +171,73 @@ void makeReport(wxWindow* parent, const wxTreeCtrl* treeCtrl) {
     wxMessageBox("The report was saved");
 }
 
+void appendNewItem(wxWindow* parent, wxTreeCtrl* treeCtrl, wxTreeItemId& item, wxString user, long my_style, wxString filename) {
+    wxArrayTreeItemIds tvi;
+    size_t size = treeCtrl->GetSelections(tvi);
+    if (size == 0)
+        return;
+
+    DlgAppendItem dlg(parent, wxID_ANY, "Add object", my_style);
+    if (dlg.ShowModal() == wxID_CANCEL)
+        return;
+
+    sTreeItem st;
+    st.name = dlg.dlgEdtText->GetValue();
+    st.comments = dlg.dlgComments->GetValue();
+
+    if (st.name == "")
+        return;
+
+    size_t maxId = logic::getMaxFid(treeCtrl, user);
+
+    for (auto& it : tvi) {
+        wxTreeItemId newItem = treeCtrl->AppendItem(it, st.name);
+        st.itemId = newItem;
+        st.fid = ++maxId;
+        logic::setTreeItemData(treeCtrl, newItem, st);
+
+        treeCtrl->Expand(it);
+        treeCtrl->SelectItem(it, false);
+        treeCtrl->SetFocusedItem(newItem);
+        // logic::showTreeItemData(treeCtrl, newItem, tc, edtName);
+    }
+
+    logic::saveTree(filename, treeCtrl);
+}
+
+void saveTree(wxString filename, const wxTreeCtrl *treeCtrl) {
+    logic::saveBrunch(filename, treeCtrl, treeCtrl->GetRootItem());
+}
+
+void showTreeItemData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& item, wxTextCtrl *tc, wxTextCtrl *edtName, wxTextCtrl *edtId, wxListBox* listBox, wxString data_path, wxChar dir_separator) {
+    sTreeItem sti = logic::getTreeItemData(treeCtrl, item);
+    if (sti == ST_ERROR)
+        return;
+
+    wxString str = wxString::Format(wxT("%s%s%zu"), "ID: ", sti.user, sti.fid);
+    edtId->SetValue(str);
+    edtName->ChangeValue(sti.name);
+
+    sti.comments.Replace("/n", "\n"); // danger - real info corrupt
+    tc->ChangeValue(sti.comments);
+
+    /* show objects attached */
+    wxString itemDirPath = sti.getObjPath(data_path, dir_separator);
+
+    listBox->Clear();
+    if (!wxDirExists(itemDirPath))
+        return;
+
+    wxArrayString files;
+    wxDir::GetAllFiles(itemDirPath, &files); // get full file path
+
+    for (auto it : files) {
+        wxString f = it.AfterLast(dir_separator); // show only filename
+        listBox->Append(f);
+    }
+
+    if (listBox->GetCount() > 0)
+        listBox->Select(0);
+}
+
 } // namespace logic

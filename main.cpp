@@ -8,8 +8,8 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
+#include "custom_dialogs.h"
 #include "logic.h"
-#include "utils.h"
 
 // Global vars
 wxString DATA_PATH = "";
@@ -110,9 +110,6 @@ private:
     void onPressBtnLink(wxCommandEvent& event);
 
     void bindEvents();
-    void appendNewItem(wxTreeItemId& item);
-    void saveTree();
-    void showTreeItemData(const wxTreeItemId& srcItem);
     void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
     void deleteItems();
     void cut();
@@ -126,8 +123,6 @@ private:
     void expandAllParents(const wxTreeItemId item);
     void searchStr();
     void dublicate();
-    // void makeReport();
-    // void getTextAllChilds(const wxTreeItemId& rootItem, wxString& str, wxString& tab);
     void moveUp();
     void moveDown();
     void sortItems(const wxTreeItemId& rootItem);
@@ -139,130 +134,6 @@ private:
     void createNewObjectFile(const wxTreeItemId& item, wxString objName);
     void takePhoto();
 };
-
-/* class to store item's data inside treectrl */
-
-/* It is a small dialog when Add new sample is pressed */
-/* The dialog makes it possible to add multiple items with one content */
-class DlgAppendItem : public wxDialog {
-public:
-    DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title);
-
-    wxTextCtrl *dlgEdtText, *dlgComments;
-    wxButton* btnDate;
-    wxComboBox* cbbTemplate;
-
-    void onPressBtnDate(wxCommandEvent& event) {
-        event.Skip(true);
-
-        wxDateTime now = wxDateTime::Now();
-        wxString str = now.Format(wxT("%d-%m-%Y_%H-%M-%S"), wxDateTime::Local);
-        dlgEdtText->SetValue(str);
-    }
-
-    /* Template */
-    struct str_templ {
-        wxString name;
-        wxString content;
-    };
-
-    wxVector<str_templ> vstr;
-
-    void loadTemplateFromFile(wxString fn, wxVector<str_templ>& vstr) {
-        vstr.clear();
-
-        wxTextFile tfile(fn);
-        if (!tfile.Exists())
-            return;
-
-        tfile.Open();
-
-        str_templ line_str;
-        for (size_t i = 0, s = tfile.GetLineCount(); i < s; ++i) {
-            line_str.name = tfile[i].Before('\t');
-            line_str.content = tfile[i].After('\t');
-            line_str.content.Replace("\\n", "\n");
-            vstr.push_back(line_str);
-        }
-
-        tfile.Close();
-    };
-
-    void fillTemplateBox() {
-        loadTemplateFromFile(TEMPLATE_FILENAME, vstr);
-
-        for (auto it : vstr)
-            cbbTemplate->Append(it.name);
-
-        if (cbbTemplate->GetCount() > 0)
-            cbbTemplate->Select(0);
-    };
-
-    void onSelectTemplate(wxCommandEvent& event) {
-        event.Skip(true);
-
-        int pos = cbbTemplate->GetSelection();
-
-        dlgComments->SetValue(vstr[pos].content);
-    }
-};
-/* It is a small dialog when Add new sample is pressed */
-
-/* It is an implementation of a small dialog when Add new sample is pressed */
-/* The dialog makes it possible to add multiple items with one content */
-DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title)
-    : wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
-    wxBoxSizer* borderSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    wxStaticText* textTemplate = new wxStaticText(this, wxID_ANY, "Template: ");
-
-    cbbTemplate = new wxComboBox(this, wxID_ANY, _T(""), wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY | MY_STYLE);
-    cbbTemplate->Bind(wxEVT_COMMAND_COMBOBOX_SELECTED, &DlgAppendItem::onSelectTemplate, this);
-
-    fillTemplateBox();
-
-    dlgEdtText = new wxTextCtrl(this, wxID_ANY, "Name", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    dlgComments = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(100, 60), wxTE_MULTILINE | MY_STYLE);
-
-    btnDate = new wxButton(this, wxID_ANY, "Date", wxDefaultPosition, wxDefaultSize, MY_STYLE | wxBU_EXACTFIT);
-    btnDate->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DlgAppendItem::onPressBtnDate, this);
-
-    hSizer->Add(dlgEdtText, 1, wxEXPAND, 0);
-    hSizer->AddSpacer(5);
-    hSizer->Add(btnDate, 0, wxEXPAND, 0);
-
-    vSizer->Add(hSizer, 0, wxEXPAND | wxBOTTOM, 5);
-
-    vSizer->Add(textTemplate);
-    vSizer->Add(cbbTemplate, 0, wxEXPAND | wxBOTTOM, 5);
-    vSizer->Add(dlgComments, 1, wxEXPAND | wxBOTTOM, 5);
-
-    vSizer->Add(CreateButtonSizer(wxYES | wxCANCEL | MY_STYLE), 0, wxCENTRE, 0);
-
-    borderSizer->Add(vSizer, 1, wxEXPAND | wxALL, 10);
-
-    SetSizer(borderSizer);
-
-    borderSizer->Fit(this);
-
-    wxSize ws = this->GetSize();
-    ws.SetHeight(ws.GetHeight() * 2);
-    ws.SetWidth(ws.GetWidth() * 2);
-
-#if defined(__WINDOWS__)
-    this->SetMinClientSize(ws);
-#else
-    SetMinSize(ws); // linux
-#endif
-
-    SetClientSize(ws); //ClientToWindowSize(ws));
-
-    dlgEdtText->SetFocus();
-    dlgEdtText->SelectAll();
-}
-/* It is an implementation of a small dialog when Add new sample is pressed */
 
 bool MyApp::OnInit() {
     wxSetlocale(LC_ALL, "");
@@ -485,7 +356,7 @@ void MainFrame::OnPopupClick(wxCommandEvent& evt) {
 
     switch (evt.GetId()) {
     case ID_ADD_ITEM:
-        appendNewItem(item);
+        logic::appendNewItem(this, treeCtrl, item, USER, MY_STYLE, FILE_NAME);
         break;
     case ID_DUBLICATE_ITEM:
         dublicate();
@@ -515,39 +386,6 @@ void MainFrame::OnPopupClick(wxCommandEvent& evt) {
 }
 // Popup menu end
 
-void MainFrame::appendNewItem(wxTreeItemId& item) {
-    wxArrayTreeItemIds tvi;
-    size_t size = treeCtrl->GetSelections(tvi);
-    if (size == 0)
-        return;
-
-    DlgAppendItem dlg(this, wxID_ANY, "Add object");
-    if (dlg.ShowModal() == wxID_CANCEL)
-        return;
-
-    sTreeItem st;
-    st.name = dlg.dlgEdtText->GetValue();
-    st.comments = dlg.dlgComments->GetValue();
-
-    if (st.name == "")
-        return;
-
-    size_t maxId = logic::getMaxFid(treeCtrl, USER);
-
-    for (auto& it : tvi) {
-        wxTreeItemId newItem = treeCtrl->AppendItem(it, st.name);
-        st.itemId = newItem;
-        st.fid = ++maxId;
-        logic::setTreeItemData(treeCtrl, newItem, st);
-
-        treeCtrl->Expand(it);
-        treeCtrl->SelectItem(it, false);
-        treeCtrl->SetFocusedItem(newItem);
-        showTreeItemData(newItem);
-    }
-
-    saveTree();
-}
 
 void MainFrame::OnBeginDrag(wxTreeEvent& event) {
     DRAGGED_ITEM = event.GetItem();
@@ -579,42 +417,11 @@ void MainFrame::OnEndDrag(wxTreeEvent& event) {
     treeCtrl->DeleteChildren(itemSrc);
     treeCtrl->Delete(itemSrc);
 
-    saveTree();
+    logic::saveTree(FILE_NAME, treeCtrl);
 
     wxTreeItemIdValue cookie;
     treeCtrl->Expand(itemDst);
     treeCtrl->SetFocusedItem(treeCtrl->GetFirstChild(itemDst, cookie));
-}
-
-void MainFrame::showTreeItemData(const wxTreeItemId& item) {
-    sTreeItem sti = logic::getTreeItemData(treeCtrl, item);
-    if (sti == ST_ERROR)
-        return;
-
-    wxString str = wxString::Format(wxT("%s%s%zu"), "ID: ", sti.user, sti.fid);
-    edtId->SetValue(str);
-    edtName->ChangeValue(sti.name);
-
-    sti.comments.Replace("/n", "\n"); // danger - real info corrupt
-    tc->ChangeValue(sti.comments);
-
-    /* show objects attached */
-    wxString itemDirPath = sti.getObjPath(DATA_PATH, DIR_SEPARATOR);
-
-    listBox->Clear();
-    if (!wxDirExists(itemDirPath))
-        return;
-
-    wxArrayString files;
-    wxDir::GetAllFiles(itemDirPath, &files); // get full file path
-
-    for (auto it : files) {
-        wxString f = it.AfterLast(DIR_SEPARATOR); // show only filename
-        listBox->Append(f);
-    }
-
-    if (listBox->GetCount() > 0)
-        listBox->Select(0);
 }
 
 void MainFrame::saveTextToItem(const wxTreeItemId item) {
@@ -627,7 +434,8 @@ void MainFrame::saveTextToItem(const wxTreeItemId item) {
 
     logic::setTreeItemData(treeCtrl, item, st);
 
-    saveTree();
+    logic::saveTree(FILE_NAME, treeCtrl);
+
 
     tc->SetModified(false);
     edtName->SetModified(false);
@@ -646,7 +454,7 @@ void MainFrame::onTreeItemStartChanging(wxCommandEvent& event) {
 void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
 
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 }
 
 void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
@@ -714,10 +522,11 @@ void MainFrame::deleteItems() {
         treeCtrl->Delete(it);
     }
 
-    showTreeItemData(firstItemParent);
-    treeCtrl->SelectItem(firstItemParent);
+    logic::showTreeItemData(treeCtrl, firstItemParent, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 
-    saveTree();
+    treeCtrl->SelectItem(firstItemParent);
+    logic::saveTree(FILE_NAME, treeCtrl);
+
 }
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
@@ -735,7 +544,7 @@ void MainFrame::cut() {
     size_t ni = dlgCut.GetValue();
 
     // show additional info dialog
-    DlgAppendItem dlgInfo(this, wxID_ANY, "Cut details");
+    DlgAppendItem dlgInfo(this, wxID_ANY, "Cut details", MY_STYLE);
     if (dlgInfo.ShowModal() == wxID_CANCEL)
         return;
     wxString prefix = dlgInfo.dlgEdtText->GetValue();
@@ -758,7 +567,7 @@ void MainFrame::cut() {
         logic::setTreeItemData(treeCtrl, addedItem, s_child);
     }
 
-    saveTree();
+    logic::saveTree(FILE_NAME, treeCtrl);
 
     treeCtrl->Expand(item);
 }
@@ -818,16 +627,12 @@ void MainFrame::importDialogStart() {
 
 void MainFrame::importSelectedBrunch(const wxTreeItemId& item, wxString fn) {
     logic::loadTree(fn, treeCtrl, item, ELEMENTS_IN_FILE_STRING);
-    saveTree();
-}
-
-void MainFrame::saveTree() {
-    logic::saveBrunch(FILE_NAME, treeCtrl, treeCtrl->GetRootItem());
+    logic::saveTree(FILE_NAME, treeCtrl);
 }
 
 void MainFrame::onPressbtnAdd(wxCommandEvent& event) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
-    appendNewItem(item);
+    logic::appendNewItem(this, treeCtrl, item, USER, MY_STYLE, FILE_NAME);
 }
 
 void MainFrame::renameItem(wxTreeItemId& item) {
@@ -843,9 +648,9 @@ void MainFrame::renameItem(wxTreeItemId& item) {
         return;
 
     logic::setTreeItemData(treeCtrl, item, st);
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 
-    saveTree();
+    logic::saveTree(FILE_NAME, treeCtrl);
 }
 
 void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
@@ -905,7 +710,7 @@ void MainFrame::renameObject(const wxTreeItemId& item, wxString objName, wxStrin
     if (wxFileExists(oldFullPath))
         wxRenameFile(oldFullPath, newFullPath);
 
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 }
 
 void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
@@ -927,7 +732,7 @@ void MainFrame::onPressbtnNewObject(wxCommandEvent& event) {
 
     createNewObjectFile(item, dlg.GetValue());
 
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 }
 
 void MainFrame::createNewObjectFile(const wxTreeItemId& item, wxString objName) {
@@ -974,7 +779,7 @@ void MainFrame::addObjectsToItem(const wxTreeItemId& item) {
         wxCopyFile(it, destFile);
     }
 
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 }
 
 void MainFrame::onPressbtnDelObject(wxCommandEvent& event) {
@@ -1011,7 +816,7 @@ void MainFrame::delObject(const wxTreeItemId& item, wxString objName) {
     if (wxFileExists(fullPath))
         wxRemoveFile(fullPath);
 
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 }
 
 void MainFrame::onPressBtnLink(wxCommandEvent& event) {
@@ -1091,7 +896,7 @@ void MainFrame::takePhoto() {
     wxCopyFile(sourceFile, destFile);
     wxRemoveFile(sourceFile);
 
-    showTreeItemData(item);
+    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 
 #endif
 }
@@ -1133,7 +938,7 @@ void MainFrame::showItemDataById(size_t itemId) {
     treeCtrl->SelectItem(found.itemId, true);
     treeCtrl->SetFocusedItem(found.itemId);
 
-    showTreeItemData(found.itemId);
+    logic::showTreeItemData(treeCtrl, found.itemId, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 }
 
 void MainFrame::expandAllParents(wxTreeItemId item) {
@@ -1167,7 +972,7 @@ void MainFrame::searchStr() {
             treeCtrl->SelectItem(it.itemId);
             treeCtrl->SetFocusedItem(it.itemId);
 
-            showTreeItemData(it.itemId);
+            logic::showTreeItemData(treeCtrl, it.itemId, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
         }
     }
 }
@@ -1194,9 +999,9 @@ void MainFrame::dublicate() {
     treeCtrl->UnselectAll();
     treeCtrl->SelectItem(newItem, true);
     treeCtrl->SetFocusedItem(newItem);
-    showTreeItemData(newItem);
+    logic::showTreeItemData(treeCtrl, newItem, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
 
-    saveTree();
+    logic::saveTree(FILE_NAME, treeCtrl);
 }
 
 void MainFrame::onPressTCkey(wxKeyEvent& event) {
@@ -1216,7 +1021,7 @@ void MainFrame::onPressTCkey(wxKeyEvent& event) {
     }
 
     if (event.GetKeyCode() == a_keyCode && event.GetModifiers() == wxACCEL_CTRL) {
-        appendNewItem(item);
+        logic::appendNewItem(this, treeCtrl, item, USER, MY_STYLE, FILE_NAME);
     }
 
     if (event.GetKeyCode() == u_keyCode && event.GetModifiers() == wxACCEL_CTRL) {
@@ -1282,5 +1087,5 @@ void MainFrame::onPressbtnCut(wxCommandEvent& event) {
 void MainFrame::sortItems(const wxTreeItemId& rootItem) {
     treeCtrl->SortChildren(rootItem);
 
-    saveTree();
+    logic::saveTree(FILE_NAME, treeCtrl);
 }
