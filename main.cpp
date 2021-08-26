@@ -116,7 +116,7 @@ private:
 
     void AppendToSelectedItems();
 
-    void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
+    // void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
     void deleteItems();
     void cut();
     void renameItem(wxTreeItemId& item);
@@ -329,11 +329,11 @@ void MainFrame::onCreateFrame() {
     wxTreeItemId rootItem = treeCtrl->AddRoot("Root");
     ST_ROOT.itemId = rootItem;
     ST_ROOT.user = USER;
-    logic::setTreeItemData(treeCtrl, rootItem, ST_ROOT);
 
     th = new logic::TreeHolder(this, treeCtrl, USER); // delete in destuctor
-    th->SetFileName(DATA_PATH, FILE_NAME, ELEMENTS_IN_FILE_STRING);
 
+    th->SetFileName(DATA_PATH, FILE_NAME, ELEMENTS_IN_FILE_STRING);
+    th->setTreeItemData(rootItem, ST_ROOT);
     th->loadTree(rootItem);
 
     treeCtrl->Expand(rootItem);
@@ -440,7 +440,7 @@ void MainFrame::OnEndDrag(wxTreeEvent& event) {
     if (!itemDst.IsOk())
         return;
 
-    moveAllChilds(itemSrc, itemDst);
+    th->moveAllChilds(itemSrc, itemDst);
     treeCtrl->DeleteChildren(itemSrc);
     treeCtrl->Delete(itemSrc);
 
@@ -452,14 +452,14 @@ void MainFrame::OnEndDrag(wxTreeEvent& event) {
 }
 
 void MainFrame::saveTextToItem(const wxTreeItemId item) {
-    sTreeItem st = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem st = th->getTreeItemData(item);
 
     st.name = edtName->GetValue();
     st.comments = tc->GetValue();
     if (st.name == "")
         return;
 
-    logic::setTreeItemData(treeCtrl, item, st);
+    th->setTreeItemData(item, st);
 
     th->saveTree();
 
@@ -480,7 +480,7 @@ void MainFrame::onTreeItemStartChanging(wxCommandEvent& event) {
 void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
 
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 }
 
 void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
@@ -489,22 +489,6 @@ void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
         return;
 
     saveTextToItem(item);
-}
-
-void MainFrame::moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem) {
-    sTreeItem ss = logic::getTreeItemData(treeCtrl, srcItem);
-    sTreeItem sd = logic::getTreeItemData(treeCtrl, destItem);
-
-    wxTreeItemId destChild = treeCtrl->AppendItem(destItem, ss.name);
-    ss.pid = sd.id;
-    logic::setTreeItemData(treeCtrl, destChild, ss);
-
-    wxTreeItemIdValue cookie;
-    wxTreeItemId srcChild = treeCtrl->GetFirstChild(srcItem, cookie);
-    while (srcChild.IsOk()) {
-        moveAllChilds(srcChild, destChild); // danger - recursia
-        srcChild = treeCtrl->GetNextChild(srcItem, cookie);
-    }
 }
 
 void MainFrame::deleteItems() {
@@ -530,7 +514,7 @@ void MainFrame::deleteItems() {
         if (treeCtrl->ItemHasChildren(it))
             return;
 
-        sTreeItem s = logic::getTreeItemData(treeCtrl, it);
+        sTreeItem s = th->getTreeItemData(it);
         wxString fullDir = s.getObjPath(DATA_PATH, DIR_SEPARATOR);
 
         if (wxFileName::DirExists(fullDir)) {
@@ -548,7 +532,7 @@ void MainFrame::deleteItems() {
         treeCtrl->Delete(it);
     }
 
-    logic::showTreeItemData(treeCtrl, firstItemParent, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(firstItemParent, tc, edtName, edtId, listBox);
 
     treeCtrl->SelectItem(firstItemParent);
     th->saveTree();
@@ -572,14 +556,15 @@ void MainFrame::cut() {
     DlgAppendItem dlgInfo(this, wxID_ANY, "Cut details", MY_STYLE);
     if (dlgInfo.ShowModal() == wxID_CANCEL)
         return;
+        
     wxString prefix = dlgInfo.dlgEdtText->GetValue();
     wxString comments = dlgInfo.dlgComments->GetValue();
 
     if (prefix == "")
         return;
 
-    sTreeItem s_parent = logic::getTreeItemData(treeCtrl, item);
-    size_t maxId = logic::getMaxFid(treeCtrl, USER);
+    sTreeItem s_parent = th->getTreeItemData(item);
+    size_t maxId = th->getMaxFid();
 
     wxTreeItemId addedItem;
     for (size_t i = 0; i < ni; ++i) {
@@ -589,7 +574,7 @@ void MainFrame::cut() {
         size_t nextId = ++maxId;
         sTreeItem s_child(addedItem, nextId, s_parent.id, USER, nextId, name, comments);
 
-        logic::setTreeItemData(treeCtrl, addedItem, s_child);
+        th->setTreeItemData(addedItem, s_child);
     }
 
     th->saveTree();
@@ -625,9 +610,8 @@ void MainFrame::exportSelectedBrunch(const wxTreeItemId& item, wxString fn) {
 
     size_t init_id = 0; // first id in exported file
 
-    logic::getAllItemsData(treeCtrl, item, vs, init_id);
+    th->getAllItemsData(item, vs, init_id);
 
-    // logic::saveBrunch(fn, treeCtrl, item);
     th->saveBrunch(item);
 }
 
@@ -662,7 +646,7 @@ void MainFrame::onPressbtnAdd(wxCommandEvent& event) {
 }
 
 void MainFrame::renameItem(wxTreeItemId& item) {
-    sTreeItem st = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem st = th->getTreeItemData(item);
 
     wxTextEntryDialog dlg(this, "Enter new name", "Rename", st.name);
     if (dlg.ShowModal() != wxID_OK)
@@ -673,8 +657,9 @@ void MainFrame::renameItem(wxTreeItemId& item) {
     if (st.name == "")
         return;
 
-    logic::setTreeItemData(treeCtrl, item, st);
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->setTreeItemData(item, st);
+
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 
     th->saveTree();
 }
@@ -684,7 +669,7 @@ void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
     if (!item.IsOk())
         return;
 
-    sTreeItem st = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem st = th->getTreeItemData(item);
 
     size_t sel = event.GetSelection();
     wxString f = listBox->GetString(sel);
@@ -728,7 +713,7 @@ void MainFrame::onPressbtnRenameObject(wxCommandEvent& event) {
 }
 
 void MainFrame::renameObject(const wxTreeItemId& item, wxString objName, wxString newObjectName) {
-    sTreeItem s = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem s = th->getTreeItemData(item);
 
     wxString oldFullPath = s.getObjPath(DATA_PATH, DIR_SEPARATOR) + objName;
     wxString newFullPath = s.getObjPath(DATA_PATH, DIR_SEPARATOR) + newObjectName;
@@ -736,7 +721,7 @@ void MainFrame::renameObject(const wxTreeItemId& item, wxString objName, wxStrin
     if (wxFileExists(oldFullPath))
         wxRenameFile(oldFullPath, newFullPath);
 
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 }
 
 void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
@@ -758,14 +743,14 @@ void MainFrame::onPressbtnNewObject(wxCommandEvent& event) {
 
     createNewObjectFile(item, dlg.GetValue());
 
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 }
 
 void MainFrame::createNewObjectFile(const wxTreeItemId& item, wxString objName) {
     if (!item.IsOk())
         return;
 
-    sTreeItem s = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem s = th->getTreeItemData(item);
 
     wxString fullDir = s.getObjPath(DATA_PATH, DIR_SEPARATOR);
     wxString fullPath = fullDir + objName;
@@ -792,7 +777,7 @@ void MainFrame::addObjectsToItem(const wxTreeItemId& item) {
     openFileDialog.GetPaths(sourceFileNames); // an array of full paths
 
     /* set folder name based on id */
-    sTreeItem s = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem s = th->getTreeItemData(item);
     wxString destDir = s.getObjPath(DATA_PATH, DIR_SEPARATOR); // ends with '/' in Linux
 
     if (!wxFileName::DirExists(destDir))
@@ -805,7 +790,7 @@ void MainFrame::addObjectsToItem(const wxTreeItemId& item) {
         wxCopyFile(it, destFile);
     }
 
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 }
 
 void MainFrame::onPressbtnDelObject(wxCommandEvent& event) {
@@ -835,14 +820,14 @@ void MainFrame::delObject(const wxTreeItemId& item, wxString objName) {
     if (!item.IsOk())
         return;
 
-    sTreeItem s = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem s = th->getTreeItemData(item);
 
     wxString fullPath = s.getObjPath(DATA_PATH, DIR_SEPARATOR) + objName;
 
     if (wxFileExists(fullPath))
         wxRemoveFile(fullPath);
 
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 }
 
 void MainFrame::onPressBtnLink(wxCommandEvent& event) {
@@ -902,7 +887,7 @@ void MainFrame::takePhoto() {
         return;
 
     wxTreeItemId item = treeCtrl->GetFocusedItem();
-    sTreeItem s = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem s = th->getTreeItemData(item);
 
     wxDateTime now = wxDateTime::Now();
     wxString str_time = now.Format(wxT("%d%m%Y_%H%M%S"), wxDateTime::Local);
@@ -922,13 +907,13 @@ void MainFrame::takePhoto() {
     wxCopyFile(sourceFile, destFile);
     wxRemoveFile(sourceFile);
 
-    logic::showTreeItemData(treeCtrl, item, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(item, tc, edtName, edtId, listBox);
 
 #endif
 }
 
 void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
-    wxNumberEntryDialog dlg(this, "", "Enter ID number", "Goto ID", 0, 0, logic::getMaxFid(treeCtrl, USER));
+    wxNumberEntryDialog dlg(this, "", "Enter ID number", "Goto ID", 0, 0, th->getMaxFid());
     if (dlg.ShowModal() != wxID_OK)
         return;
 
@@ -945,7 +930,7 @@ void MainFrame::showItemDataById(size_t itemId) {
 
     wxVector<sTreeItem> vs;
     size_t init_id = 0;
-    logic::getAllItemsData(treeCtrl, treeCtrl->GetRootItem(), vs, init_id);
+    th->getAllItemsData(treeCtrl->GetRootItem(), vs, init_id);
 
     for (auto it : vs)
         if (it.fid == itemId) {
@@ -964,7 +949,7 @@ void MainFrame::showItemDataById(size_t itemId) {
     treeCtrl->SelectItem(found.itemId, true);
     treeCtrl->SetFocusedItem(found.itemId);
 
-    logic::showTreeItemData(treeCtrl, found.itemId, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+    th->showTreeItemData(found.itemId, tc, edtName, edtId, listBox);
 }
 
 void MainFrame::expandAllParents(wxTreeItemId item) {
@@ -982,7 +967,7 @@ void MainFrame::searchStr() {
     wxVector<sTreeItem> vs;
     wxTreeItemId rootItem = treeCtrl->GetRootItem();
     size_t init_id = 0;
-    logic::getAllItemsData(treeCtrl, rootItem, vs, init_id);
+    th->getAllItemsData(rootItem, vs, init_id);
 
     wxString str = edtSearch->GetValue();
     if (str == "")
@@ -998,7 +983,7 @@ void MainFrame::searchStr() {
             treeCtrl->SelectItem(it.itemId);
             treeCtrl->SetFocusedItem(it.itemId);
 
-            logic::showTreeItemData(treeCtrl, it.itemId, tc, edtName, edtId, listBox, DATA_PATH, DIR_SEPARATOR);
+            th->showTreeItemData(it.itemId, tc, edtName, edtId, listBox);
         }
     }
 }
@@ -1040,7 +1025,7 @@ void MainFrame::onPressTCkey(wxKeyEvent& event) {
 
 void MainFrame::moveUp() {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
-    sTreeItem ss = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem ss = th->getTreeItemData(item);
 
     wxTreeItemId pItem = treeCtrl->GetItemParent(item);
 
@@ -1048,10 +1033,10 @@ void MainFrame::moveUp() {
     if (!prevSibItem.IsOk())
         return;
 
-    sTreeItem spsi = logic::getTreeItemData(treeCtrl, prevSibItem);
+    sTreeItem spsi = th->getTreeItemData(prevSibItem);
 
     wxTreeItemId newItem = treeCtrl->InsertItem(pItem, item, spsi.name);
-    logic::setTreeItemData(treeCtrl, newItem, spsi);
+    th->setTreeItemData(newItem, spsi);
 
     wxString temporaryFile = "tmp.txt";
     exportSelectedBrunch(prevSibItem, temporaryFile);
@@ -1061,7 +1046,7 @@ void MainFrame::moveUp() {
 
 void MainFrame::moveDown() {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
-    sTreeItem ss = logic::getTreeItemData(treeCtrl, item);
+    sTreeItem ss = th->getTreeItemData(item);
 
     wxTreeItemId pItem = treeCtrl->GetItemParent(item);
 
@@ -1069,10 +1054,10 @@ void MainFrame::moveDown() {
     if (!nextSibItem.IsOk())
         return;
 
-    sTreeItem spsi = logic::getTreeItemData(treeCtrl, nextSibItem);
+    sTreeItem spsi = th->getTreeItemData(nextSibItem);
 
     wxTreeItemId newItem = treeCtrl->InsertItem(pItem, nextSibItem, ss.name);
-    logic::setTreeItemData(treeCtrl, newItem, ss);
+    th->setTreeItemData(newItem, ss);
 
     wxString temporaryFile = "tmp.txt";
     exportSelectedBrunch(item, temporaryFile);

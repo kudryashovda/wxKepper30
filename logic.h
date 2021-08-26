@@ -1,8 +1,9 @@
 #pragma once
 
-#include "custom_dialogs.h"
 #include "domain.h"
 #include "utils.h"
+#include <wx/dir.h>
+#include <wx/filename.h>
 
 namespace logic {
 
@@ -22,7 +23,7 @@ public:
     }
 
     void AppendItem(const wxArrayTreeItemIds& dest_tvi, sTreeItem st);
-
+    size_t getMaxFid();
 
     void makeReport();
     void saveBrunch(const wxTreeItemId& head_item);
@@ -30,8 +31,11 @@ public:
     void loadTree(const wxTreeItemId& item2connect);
     void dublicate(const wxTreeItemId& item);
     void sortItems(const wxTreeItemId& rootItem);
-
-
+    void setTreeItemData(const wxTreeItemId& item, const sTreeItem& st);
+    sTreeItem getTreeItemData(const wxTreeItemId& item);
+    void getAllItemsData(const wxTreeItemId& srcItem, wxVector<sTreeItem>& vs, size_t& init_id);
+    void showTreeItemData(const wxTreeItemId& item, wxTextCtrl* tc, wxTextCtrl* edtName, wxTextCtrl* edtId, wxListBox* listBox);
+    void moveAllChilds(const wxTreeItemId& srcItem, const wxTreeItemId& destItem);
 private:
     wxWindow* parent_;
     wxTreeCtrl* treeCtrl_;
@@ -44,12 +48,4 @@ private:
     wxChar dir_separator_;
 };
 
-sTreeItem getTreeItemData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& item);
-void getAllItemsData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& srcItem, wxVector<sTreeItem>& vs, size_t& init_id);
-size_t getMaxFid(const wxTreeCtrl* treeCtrl, wxString user);
-void getTextAllChilds(const wxTreeCtrl* treeCtrl, const wxTreeItemId& rootItem, wxString& str, wxString& tab);
-void makeReport(wxWindow* parent, const wxTreeCtrl* treeCtrl);
-void setTreeItemData(wxTreeCtrl* treeCtrl, const wxTreeItemId& item, const sTreeItem& st);
-
-void showTreeItemData(const wxTreeCtrl* treeCtrl, const wxTreeItemId& item, wxTextCtrl* tc, wxTextCtrl* edtName, wxTextCtrl* edtId, wxListBox* listBox, wxString data_path, wxChar dir_separator);
 } // namespace logic

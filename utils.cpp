@@ -1,4 +1,5 @@
 #include "utils.h"
+
 namespace utils {
 
 bool CheckTrial(const wxString& trial_date) {
