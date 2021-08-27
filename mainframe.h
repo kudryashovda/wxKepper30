@@ -15,6 +15,7 @@ public:
 
 private:
     wxLogic logic_;
+    long style_;
 
     /* define widgets */
     wxPanel *pnl, *pnlCard;
@@ -30,7 +31,22 @@ private:
 
     void BindEvents();
     void InitTreeCtrl();
+
 public:
-    void OnBtnAddPress(wxCommandEvent& event);
+    void OnBtnAddClick(wxCommandEvent& event);
     void onTreeItemClick(wxCommandEvent& event);
+    void onPressbtnExport(wxCommandEvent& event);
+    void onPressbtnImport(wxCommandEvent& event);
+    
+    void ShowCard(const TreeItem& info);
+};
+
+class DlgAppendItem : public wxDialog {
+public:
+    DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title, long my_style);
+
+    wxTextCtrl *dlgEdtText, *dlgComments;
+
+private:
+    long style_;
 };

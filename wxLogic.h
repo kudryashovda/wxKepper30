@@ -12,12 +12,18 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
+enum class ItemStatus {
+    Normal,
+    Deleted
+};
+
 struct TreeItem {
     int id;
     int parent_id;
     wxTreeItemId wxitem;
     wxString name;
     wxString comment;
+    ItemStatus status;
 };
 
 class wxLogic {
@@ -26,6 +32,10 @@ public:
     wxTreeItemId CreateRootItem(const wxString& str);
     wxTreeItemId AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
     TreeItem GetTreeItemInfo(const wxTreeItemId& item);
+    void SaveTree();
+    void LoadTree();
+    TreeItem tokenizer(wxString str, wxString delim);
+
 
 private:
     wxTreeCtrl* treeCtrl_;

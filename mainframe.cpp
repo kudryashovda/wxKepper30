@@ -6,34 +6,34 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 
 /* buttons and edits style */
 #if defined(__WINDOWS__)
-    long MY_STYLE = wxNO_BORDER;
+    style_ = wxNO_BORDER;
 #else
-    long MY_STYLE = wxSTATIC_BORDER;
+    style_ = wxSTATIC_BORDER;
 #endif
 
 #if defined(__WINDOWS__)
     SetIcon(wxICON(icon)); // windows only. icon file mt be located
 #endif
-    pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | MY_STYLE);
+    pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | style_);
 
     treeCtrl = new wxTreeCtrl(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                              wxTR_DEFAULT_STYLE | wxTR_MULTIPLE | MY_STYLE, wxDefaultValidator, wxTreeCtrlNameStr);
+                              wxTR_DEFAULT_STYLE | wxTR_MULTIPLE | style_, wxDefaultValidator, wxTreeCtrlNameStr);
 
-    edtSearch = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | MY_STYLE,
+    edtSearch = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
                                wxDefaultValidator, wxTextCtrlNameStr);
-    btnSearch = new wxButton(pnl, wxID_ANY, "Search", wxDefaultPosition, wxDefaultSize, MY_STYLE);
+    btnSearch = new wxButton(pnl, wxID_ANY, "Search", wxDefaultPosition, wxDefaultSize, style_);
 
     searchBarSizer = new wxBoxSizer(wxHORIZONTAL);
     searchBarSizer->Add(edtSearch, 1, wxEXPAND, 0);
     searchBarSizer->Add(btnSearch, 0, wxEXPAND, 0);
 
-    btnCut = new wxButton(pnl, wxID_ANY, "Cut", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnAdd = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnDel = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnExport = new wxButton(pnl, wxID_ANY, "Export", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnImport = new wxButton(pnl, wxID_ANY, "Import", wxDefaultPosition, wxDefaultSize, MY_STYLE);
+    btnCut = new wxButton(pnl, wxID_ANY, "Cut", wxDefaultPosition, wxDefaultSize, style_);
+    btnAdd = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, style_);
+    btnDel = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, style_);
+    btnExport = new wxButton(pnl, wxID_ANY, "Export", wxDefaultPosition, wxDefaultSize, style_);
+    btnImport = new wxButton(pnl, wxID_ANY, "Import", wxDefaultPosition, wxDefaultSize, style_);
 
-    btnGoto = new wxButton(pnl, wxID_ANY, "Goto ID", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | MY_STYLE,
+    btnGoto = new wxButton(pnl, wxID_ANY, "Goto ID", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
 
     gsTopBtns = new wxGridSizer(1, 5, 1, 1);
@@ -44,7 +44,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     gsTopBtns->Add(btnImport, 1, wxEXPAND, 0);
 
     lblName = new wxStaticText(pnl, wxID_ANY, "Name:");
-    edtName = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | MY_STYLE,
+    edtName = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
                              wxDefaultValidator, wxTextCtrlNameStr);
 
     nameBarSizer = new wxBoxSizer(wxVERTICAL);
@@ -54,7 +54,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     nameBarSizer->Add(edtName, 0, wxEXPAND, 0);
 
     lblId = new wxStaticText(pnl, wxID_ANY, "");
-    edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | MY_STYLE,
+    edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
     edtId->SetBackgroundColour(*wxWHITE);
     edtId->Refresh();
@@ -72,16 +72,16 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 
     lblComtsName = new wxStaticText(pnl, wxID_ANY, "Comments");
     tc = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize,
-                        wxTE_MULTILINE | MY_STYLE, // wxTE_RICH
+                        wxTE_MULTILINE | style_, // wxTE_RICH
                         wxDefaultValidator, wxTextCtrlNameStr);
 
-    lblListName = new wxStaticText(pnl, wxID_ANY, "Attached objects", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnNewObject = new wxButton(pnl, wxID_ANY, "New", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnaddObjectsToItem = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnDelObject = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnRenameObj = new wxButton(pnl, wxID_ANY, "Rename", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnPhoto = new wxButton(pnl, wxID_ANY, "Photo", wxDefaultPosition, wxDefaultSize, MY_STYLE);
-    btnLink = new wxButton(pnl, wxID_ANY, "Link to...", wxDefaultPosition, wxDefaultSize, MY_STYLE);
+    lblListName = new wxStaticText(pnl, wxID_ANY, "Attached objects", wxDefaultPosition, wxDefaultSize, style_);
+    btnNewObject = new wxButton(pnl, wxID_ANY, "New", wxDefaultPosition, wxDefaultSize, style_);
+    btnaddObjectsToItem = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, style_);
+    btnDelObject = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, style_);
+    btnRenameObj = new wxButton(pnl, wxID_ANY, "Rename", wxDefaultPosition, wxDefaultSize, style_);
+    btnPhoto = new wxButton(pnl, wxID_ANY, "Photo", wxDefaultPosition, wxDefaultSize, style_);
+    btnLink = new wxButton(pnl, wxID_ANY, "Link to...", wxDefaultPosition, wxDefaultSize, style_);
 
     gsObjBtns = new wxGridSizer(1, 6, 1, 1);
 
@@ -92,9 +92,9 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     gsObjBtns->Add(btnPhoto, 1, wxEXPAND, 0);
     gsObjBtns->Add(btnLink, 1, wxEXPAND, 0);
 
-    listBox = new wxListBox(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, MY_STYLE);
+    listBox = new wxListBox(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, style_);
 
-    btnSaveItemData = new wxButton(pnl, wxID_ANY, "Save", wxDefaultPosition, wxDefaultSize, MY_STYLE);
+    btnSaveItemData = new wxButton(pnl, wxID_ANY, "Save", wxDefaultPosition, wxDefaultSize, style_);
 
     leftSizer = new wxBoxSizer(wxVERTICAL);
     leftSizer->Add(treeCtrl, 1, wxEXPAND, 0);
@@ -139,32 +139,92 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     InitTreeCtrl();
 }
 
+DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title, long style_)
+    : wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+    , style_(style_) {
+    wxBoxSizer* borderSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    dlgEdtText = new wxTextCtrl(this, wxID_ANY, "Name", wxDefaultPosition, wxDefaultSize, style_);
+    dlgComments = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(100, 60), wxTE_MULTILINE | style_);
+
+    hSizer->Add(dlgEdtText, 1, wxEXPAND, 0);
+    hSizer->AddSpacer(5);
+
+    vSizer->Add(hSizer, 0, wxEXPAND | wxBOTTOM, 5);
+
+    vSizer->Add(dlgComments, 1, wxEXPAND | wxBOTTOM, 5);
+
+    vSizer->Add(CreateButtonSizer(wxYES | wxCANCEL | style_), 0, wxCENTRE, 0);
+
+    borderSizer->Add(vSizer, 1, wxEXPAND | wxALL, 10);
+
+    SetSizer(borderSizer);
+
+    borderSizer->Fit(this);
+
+    wxSize ws = this->GetSize();
+    ws.SetHeight(ws.GetHeight() * 2);
+    ws.SetWidth(ws.GetWidth() * 2);
+
+#if defined(__WINDOWS__)
+    this->SetMinClientSize(ws);
+#else
+    SetMinSize(ws); // linux
+#endif
+
+    SetClientSize(ws); //ClientToWindowSize(ws));
+
+    dlgEdtText->SetFocus();
+    dlgEdtText->SelectAll();
+}
+
 void MainFrame::InitTreeCtrl() {
     logic_.AddTree(treeCtrl);
     auto root_item = logic_.CreateRootItem("Root");
 }
 
 void MainFrame::BindEvents() {
-    btnAdd->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::OnBtnAddPress, this);
+    btnAdd->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::OnBtnAddClick, this);
     treeCtrl->Bind(wxEVT_TREE_SEL_CHANGED, &MainFrame::onTreeItemClick, this);
+    btnExport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnExport, this);
+    btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
 }
 
-void MainFrame::OnBtnAddPress(wxCommandEvent& event) {
+void MainFrame::ShowCard(const TreeItem& info) {
+    edtId->SetValue(std::to_string(info.id));
+    edtName->SetValue(info.name);
+    tc->SetValue(info.comment);
+}
+
+void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
     auto selected_item = treeCtrl->GetFocusedItem();
 
-    // name, comment = Dlg();
+    DlgAppendItem dlg(this, wxID_ANY, "Add object", this->style_);
+    if (dlg.ShowModal() == wxID_CANCEL)
+        return;
 
-    auto res = logic_.AppendTreeItem(selected_item, "name", "comment");
+    wxString name = dlg.dlgEdtText->GetValue();
+    wxString comment = dlg.dlgComments->GetValue();
+
+    auto res = logic_.AppendTreeItem(selected_item, name, comment);
 
     treeCtrl->Expand(selected_item);
 }
 
 void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     auto selected_item = treeCtrl->GetFocusedItem();
-    
+
     auto info = logic_.GetTreeItemInfo(selected_item);
 
-    edtId->SetValue(std::to_string(info.id) );
-    edtName->SetValue(info.name);
-    tc->SetValue(info.comment);
+    this->ShowCard(info);
 }
+
+void MainFrame::onPressbtnExport(wxCommandEvent& event) {
+    logic_.SaveTree();
+}
+
+    void MainFrame::onPressbtnImport(wxCommandEvent& event){
+        logic_.LoadTree();
+    }
