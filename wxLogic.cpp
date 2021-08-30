@@ -40,12 +40,15 @@ void wxLogic::SaveTree() {
         TreeItem item = id_to_info_.at(id); // not ref
 
         item.name.ToUTF8();
-        item.name.Replace('\\', "\\\\");
+        item.name.Replace('\n', "\\n");
         item.name.Replace('\t', "\\t");
 
         item.comment.ToUTF8();
+
+        // item.comment.Replace("\\t", "\\\\t");
+        // item.comment.Replace('\\', "\\\\");
+
         item.comment.Replace('\\', "\\\\");
-        item.comment.Replace('\t', "\\t");
         item.comment.Replace('\n', "\\n");
 
         wxChar status = 'U';
@@ -59,96 +62,6 @@ void wxLogic::SaveTree() {
         os << line << '\n';
     }
 }
-
-// void wxLogic::LoadTree() {
-
-//     treeCtrl_->DeleteAllItems();
-//     ids_.clear();
-//     id_to_info_.clear();
-//     wxitem_to_id_.clear();
-
-//     CreateRootItem("Root");
-
-//     wxVector<TreeItem> vs;
-
-//     wxTextFile tfile("test.txt");
-//     if (!tfile.Exists())
-//         return;
-
-//     tfile.Open();
-
-//     for (size_t i = 1; i < tfile.GetLineCount(); ++i) {
-//         TreeItem ti;
-
-//         auto tokens = this->tokenizer(tfile[i], "\t");
-
-//         ti.id = wxAtoi(tokens[0]);
-//         ti.parent_id = wxAtoi(tokens[1]);
-
-//         ti.name = tokens[2];
-//         ti.comment = tokens[3];
-
-//         wxString raw_status = tokens[4];
-//         ti.status = ItemStatus::Normal;
-//         if (raw_status == "D") {
-//             ti.status = ItemStatus::Deleted;
-//         }
-
-//         ti.name.Replace("\\t", '\t');
-//         ti.name.Replace("\\\\", '\\');
-
-//         ti.comment.Replace("\\t", '\t');
-//         ti.comment.Replace("\\n", '\n');
-//         ti.comment.Replace("\\\\", '\\');
-
-//         ids_.push_back(ti.id);
-//         id_to_info_[ti.id] = ti;
-//     }
-
-//     tfile.Close();
-
-//     // Fill tree
-//     for (size_t i = 1; i < ids_.size(); ++i) {
-//         auto item_id = ids_.at(i);
-//         auto item_info = id_to_info_.at(item_id);
-
-//         if (item_info.wxitem != NULL) {
-//             continue;
-//         }
-
-//         auto parent_id = item_info.parent_id;
-//         auto parent_item_ptr = id_to_info_.at(parent_id).wxitem;
-
-//         int j = i;
-//         auto next_parent_item_ptr = parent_item_ptr;
-//         auto next_item_id = item_id;
-//         while (next_parent_item_ptr == NULL && (j + 1) < ids_.size()) {
-//             ++j;
-//             next_item_id = ids_.at(j);
-//             auto next_parent_id = id_to_info_.at(next_item_id).parent_id;
-//             next_parent_item_ptr = id_to_info_.at(next_parent_id).wxitem;
-//         }
-//         // end size()
-//         if (j == ids_.size()) {
-//             throw std::logic_error("bad file");
-//         }
-
-//         wxString current_name;
-//         if (j == i) {
-//             current_name = item_info.name;
-//         } else {
-//             current_name = id_to_info_.at(next_item_id).name;
-//             --i; // step back
-//         }
-
-//         auto new_item = treeCtrl_->AppendItem(next_parent_item_ptr, current_name);
-
-//         id_to_info_[next_item_id].wxitem = new_item;
-//         wxitem_to_id_[new_item] = next_item_id;
-//     }
-
-//     treeCtrl_->Expand(treeCtrl_->GetRootItem());
-// }
 
 wxTreeItemId wxLogic::GetParentTreeItemPtrById(int item_id) {
     int parent_id = id_to_info_.at(item_id).parent_id;
@@ -183,6 +96,10 @@ void wxLogic::LoadTree() {
     std::getline(is, line); // pass root string
 
     while (std::getline(is, line)) {
+        if (line.empty()) {
+            continue;
+        }
+
         TreeItem ti;
 
         auto tokens = this->tokenizer(line, "\t");
@@ -199,18 +116,12 @@ void wxLogic::LoadTree() {
             ti.status = ItemStatus::Deleted;
         }
 
-        ti.name.Replace("\\t", '\t');
-        ti.name.Replace("\\\\", '\\');
+        // ti.name.Replace("\\t", '\t');
+        // ti.name.Replace("\\n", '\n');
 
         // ti.comment.Replace("\\t", '\t');
-        // ti.comment.Replace("\\n", '\n');
-        // ti.comment.Replace("\\\\", '\\');
-
-
-        ti.comment.Replace("\\\\", '\\');
-        ti.comment.Replace("\\t", '\t');
         ti.comment.Replace("\\n", '\n');
-
+        ti.comment.Replace("\\\\n", "\\n"); // !!! error
 
         ids_.push_back(ti.id);
         id_to_info_[ti.id] = ti;
