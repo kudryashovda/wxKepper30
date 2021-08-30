@@ -56,7 +56,6 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     lblId = new wxStaticText(pnl, wxID_ANY, "");
     edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
-    edtId->SetBackgroundColour(*wxWHITE);
     edtId->Refresh();
 
     idBarSizer = new wxBoxSizer(wxVERTICAL);
@@ -136,7 +135,14 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     Centre(wxHORIZONTAL);
 
     BindEvents();
-    InitTreeCtrl();
+
+    logic_.SetTree(treeCtrl);
+
+    logic_.LoadTree();
+
+    auto root_item = treeCtrl->GetRootItem();
+    treeCtrl->SelectItem(root_item);
+    treeCtrl->SetFocusedItem(root_item);
 }
 
 DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title, long style_)
@@ -180,16 +186,12 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
     dlgEdtText->SelectAll();
 }
 
-void MainFrame::InitTreeCtrl() {
-    logic_.AddTree(treeCtrl);
-    auto root_item = logic_.CreateRootItem("Root");
-}
-
 void MainFrame::BindEvents() {
     btnAdd->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::OnBtnAddClick, this);
     treeCtrl->Bind(wxEVT_TREE_SEL_CHANGED, &MainFrame::onTreeItemClick, this);
     btnExport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnExport, this);
     btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
+    btnDel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDel, this);
 }
 
 void MainFrame::ShowCard(const TreeItem& info) {
@@ -200,6 +202,9 @@ void MainFrame::ShowCard(const TreeItem& info) {
 
 void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
     auto selected_item = treeCtrl->GetFocusedItem();
+    if (selected_item == NULL) {
+        return;
+    }
 
     DlgAppendItem dlg(this, wxID_ANY, "Add object", this->style_);
     if (dlg.ShowModal() == wxID_CANCEL)
@@ -208,7 +213,7 @@ void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
     wxString name = dlg.dlgEdtText->GetValue();
     wxString comment = dlg.dlgComments->GetValue();
 
-    auto res = logic_.AppendTreeItem(selected_item, name, comment);
+    logic_.AppendTreeItem(selected_item, name, comment);
 
     treeCtrl->Expand(selected_item);
 }
@@ -225,6 +230,16 @@ void MainFrame::onPressbtnExport(wxCommandEvent& event) {
     logic_.SaveTree();
 }
 
-    void MainFrame::onPressbtnImport(wxCommandEvent& event){
-        logic_.LoadTree();
+void MainFrame::onPressbtnImport(wxCommandEvent& event) {
+    logic_.LoadTree();
+}
+
+void MainFrame::onPressbtnDel(wxCommandEvent& event) {
+    auto selected_item = treeCtrl->GetFocusedItem();
+
+    if (selected_item == NULL) {
+        return;
     }
+
+    logic_.DeleteItem(selected_item);
+}

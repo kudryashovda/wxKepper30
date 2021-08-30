@@ -3,14 +3,15 @@
 #include <unordered_map>
 #include <map>
 #include <vector>
+#include <fstream>
 
-#include <wx/dir.h>
-#include <wx/filename.h>
-#include <wx/listbox.h>
+#include <filesystem>
+
 #include <wx/numdlg.h>
-#include <wx/textfile.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
+
+namespace fs = std::filesystem;
 
 enum class ItemStatus {
     Normal,
@@ -28,17 +29,24 @@ struct TreeItem {
 
 class wxLogic {
 public:
-    void AddTree(wxTreeCtrl* treeCtrl);
-    wxTreeItemId CreateRootItem(const wxString& str);
+    void SetTree(wxTreeCtrl* treeCtrl);
+    // wxTreeItemId CreateRootItem(const wxString& str);
     wxTreeItemId AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
-    TreeItem GetTreeItemInfo(const wxTreeItemId& item);
+    const TreeItem& GetTreeItemInfo(const wxTreeItemId& item);
     void SaveTree();
     void LoadTree();
-    TreeItem tokenizer(wxString str, wxString delim);
-
+    wxVector<wxString> tokenizer(wxString str, wxString delim);
+    wxTreeItemId GetParentTreeItemPtrById(int id);
+    void CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id);
+    void DeleteItem(wxTreeItemId item_ptr);
 
 private:
+    const fs::path workdir_ = fs::current_path();
+    const fs::path db_path_ = workdir_ / "data" / "db.dat";
+    const fs::path db_workdir_ = db_path_.parent_path();
+
     wxTreeCtrl* treeCtrl_;
-    std::vector<TreeItem> id_to_wxitem_;
+    std::vector<int> ids_;
+    std::map<int, TreeItem> id_to_info_;
     std::map<wxTreeItemId, int> wxitem_to_id_;
 };

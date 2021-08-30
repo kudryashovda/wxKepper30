@@ -1,46 +1,44 @@
 #include "wxLogic.h"
 
-void wxLogic::AddTree(wxTreeCtrl* treeCtrl) {
+void wxLogic::SetTree(wxTreeCtrl* treeCtrl) {
     treeCtrl_ = treeCtrl;
 }
 
-wxTreeItemId wxLogic::CreateRootItem(const wxString& str) {
-    auto root_item = treeCtrl_->AddRoot(str);
-
-    id_to_wxitem_.push_back({ 0, 0, root_item, str, "", ItemStatus::Normal });
-    wxitem_to_id_[root_item] = 0;
-
-    return root_item;
-}
-
 wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment) {
-    size_t target_item_id = wxitem_to_id_.at(target);
+    if (target == NULL) {
+        return NULL;
+    }
+
+    int target_item_id = wxitem_to_id_.at(target);
 
     auto new_item = treeCtrl_->AppendItem(target, name);
-    size_t new_item_id = id_to_wxitem_.size();
+    int new_item_id = ids_.size();
+    ids_.push_back(new_item_id);
 
-    id_to_wxitem_.push_back({ new_item_id, target_item_id, new_item, name, comment, ItemStatus::Normal });
+    id_to_info_[new_item_id] = { new_item_id, target_item_id, new_item, name, comment, ItemStatus::Normal };
     wxitem_to_id_[new_item] = new_item_id;
 
     return new_item;
 }
 
-TreeItem wxLogic::GetTreeItemInfo(const wxTreeItemId& item) {
+const TreeItem& wxLogic::GetTreeItemInfo(const wxTreeItemId& item) {
     auto item_id = wxitem_to_id_.at(item);
 
-    return id_to_wxitem_.at(item_id);
+    const auto& info = id_to_info_.at(item_id);
+
+    return info;
 }
 
 void wxLogic::SaveTree() {
-    wxTextFile tfile("test.txt");
-    if (not tfile.Exists()) {
-        tfile.Create();
+    if (!fs::exists(db_path_)) {
+        fs::create_directories(db_workdir_);
     }
 
-    tfile.Open();
-    tfile.Clear();
+    std::ofstream os(db_path_);
 
-    for (auto item : id_to_wxitem_) {
+    for (auto id : ids_) {
+        TreeItem item = id_to_info_.at(id); // not ref
+
         item.name.ToUTF8();
         item.name.Replace('\\', "\\\\");
         item.name.Replace('\t', "\\t");
@@ -57,67 +55,218 @@ void wxLogic::SaveTree() {
             status = 'D';
         };
 
-        wxString line = wxString::Format(wxT("%zu\t%zu\t%s\t%s\t%c"), item.id, item.parent_id, item.name, item.comment, status);
-        tfile.AddLine(line);
+        wxString line = wxString::Format(wxT("%d\t%d\t%s\t%s\t%c"), id, item.parent_id, item.name, item.comment, status);
+        os << line << '\n';
     }
+}
 
-    tfile.Write();
-    tfile.Close();
+// void wxLogic::LoadTree() {
+
+//     treeCtrl_->DeleteAllItems();
+//     ids_.clear();
+//     id_to_info_.clear();
+//     wxitem_to_id_.clear();
+
+//     CreateRootItem("Root");
+
+//     wxVector<TreeItem> vs;
+
+//     wxTextFile tfile("test.txt");
+//     if (!tfile.Exists())
+//         return;
+
+//     tfile.Open();
+
+//     for (size_t i = 1; i < tfile.GetLineCount(); ++i) {
+//         TreeItem ti;
+
+//         auto tokens = this->tokenizer(tfile[i], "\t");
+
+//         ti.id = wxAtoi(tokens[0]);
+//         ti.parent_id = wxAtoi(tokens[1]);
+
+//         ti.name = tokens[2];
+//         ti.comment = tokens[3];
+
+//         wxString raw_status = tokens[4];
+//         ti.status = ItemStatus::Normal;
+//         if (raw_status == "D") {
+//             ti.status = ItemStatus::Deleted;
+//         }
+
+//         ti.name.Replace("\\t", '\t');
+//         ti.name.Replace("\\\\", '\\');
+
+//         ti.comment.Replace("\\t", '\t');
+//         ti.comment.Replace("\\n", '\n');
+//         ti.comment.Replace("\\\\", '\\');
+
+//         ids_.push_back(ti.id);
+//         id_to_info_[ti.id] = ti;
+//     }
+
+//     tfile.Close();
+
+//     // Fill tree
+//     for (size_t i = 1; i < ids_.size(); ++i) {
+//         auto item_id = ids_.at(i);
+//         auto item_info = id_to_info_.at(item_id);
+
+//         if (item_info.wxitem != NULL) {
+//             continue;
+//         }
+
+//         auto parent_id = item_info.parent_id;
+//         auto parent_item_ptr = id_to_info_.at(parent_id).wxitem;
+
+//         int j = i;
+//         auto next_parent_item_ptr = parent_item_ptr;
+//         auto next_item_id = item_id;
+//         while (next_parent_item_ptr == NULL && (j + 1) < ids_.size()) {
+//             ++j;
+//             next_item_id = ids_.at(j);
+//             auto next_parent_id = id_to_info_.at(next_item_id).parent_id;
+//             next_parent_item_ptr = id_to_info_.at(next_parent_id).wxitem;
+//         }
+//         // end size()
+//         if (j == ids_.size()) {
+//             throw std::logic_error("bad file");
+//         }
+
+//         wxString current_name;
+//         if (j == i) {
+//             current_name = item_info.name;
+//         } else {
+//             current_name = id_to_info_.at(next_item_id).name;
+//             --i; // step back
+//         }
+
+//         auto new_item = treeCtrl_->AppendItem(next_parent_item_ptr, current_name);
+
+//         id_to_info_[next_item_id].wxitem = new_item;
+//         wxitem_to_id_[new_item] = next_item_id;
+//     }
+
+//     treeCtrl_->Expand(treeCtrl_->GetRootItem());
+// }
+
+wxTreeItemId wxLogic::GetParentTreeItemPtrById(int item_id) {
+    int parent_id = id_to_info_.at(item_id).parent_id;
+
+    return id_to_info_.at(parent_id).wxitem;
 }
 
 void wxLogic::LoadTree() {
+    if (!treeCtrl_->IsEmpty()) {
+        treeCtrl_->DeleteAllItems();
 
-    // auto root_item = treeCtrl_->GetRootItem();
-    treeCtrl_->DeleteAllItems();
-    id_to_wxitem_.clear();
-    wxitem_to_id_.clear();
+        ids_.clear();
+        id_to_info_.clear();
+        wxitem_to_id_.clear();
+    }
 
-    // id_to_wxitem_.push_back({0,0, root_item, "Root", "", ItemStatus::Normal});
-    // wxitem_to_id_[root_item] = 0;
-    CreateRootItem("Root");
+    auto root_item_ptr = treeCtrl_->AddRoot("Root");
+
+    int root_id = 0;
+    ids_.push_back(root_id);
+    id_to_info_[root_id] = { root_id, 0, root_item_ptr, "Root", "", ItemStatus::Normal };
+    wxitem_to_id_[root_item_ptr] = root_id;
 
     wxVector<TreeItem> vs;
 
-    wxTextFile tfile("test.txt");
-    if (!tfile.Exists())
+    if (!fs::exists(db_path_)) {
         return;
+    }
 
-    tfile.Open();
+    std::ifstream is(db_path_);
+    std::string line;
+    std::getline(is, line); // pass root string
 
-    for (size_t i = 1; i < tfile.GetLineCount(); ++i) {
-        auto ti = this->tokenizer(tfile[i], "\t");
+    while (std::getline(is, line)) {
+        TreeItem ti;
+
+        auto tokens = this->tokenizer(line, "\t");
+
+        ti.id = wxAtoi(tokens[0]);
+        ti.parent_id = wxAtoi(tokens[1]);
+
+        ti.name = tokens[2];
+        ti.comment = tokens[3];
+
+        wxString raw_status = tokens[4];
+        ti.status = ItemStatus::Normal;
+        if (raw_status == "D") {
+            ti.status = ItemStatus::Deleted;
+        }
 
         ti.name.Replace("\\t", '\t');
         ti.name.Replace("\\\\", '\\');
 
+        // ti.comment.Replace("\\t", '\t');
+        // ti.comment.Replace("\\n", '\n');
+        // ti.comment.Replace("\\\\", '\\');
+
+
+        ti.comment.Replace("\\\\", '\\');
         ti.comment.Replace("\\t", '\t');
         ti.comment.Replace("\\n", '\n');
-        ti.comment.Replace("\\\\", '\\');
 
-        id_to_wxitem_.push_back(ti);
+
+        ids_.push_back(ti.id);
+        id_to_info_[ti.id] = ti;
     }
 
-    tfile.Close();
-
     // Fill tree
-    for (size_t id = 1; id < id_to_wxitem_.size(); ++id) {
-        auto item = id_to_wxitem_.at(id);
+    for (size_t i = 1; i < ids_.size(); ++i) {
+        auto item_id = ids_.at(i);
+        auto item_info = id_to_info_.at(item_id);
 
-        auto parent_id = item.parent_id;
-        auto parent_item = id_to_wxitem_.at(parent_id).wxitem;
+        if (item_info.wxitem != NULL || item_info.status == ItemStatus::Deleted) {
+            continue;
+        }
 
-        if (item.status == ItemStatus::Normal) {
-            auto new_item = treeCtrl_->AppendItem(parent_item, item.name);
+        auto parent_item_ptr = GetParentTreeItemPtrById(item_id);
 
-            id_to_wxitem_[item.id].wxitem = new_item;
-            wxitem_to_id_[new_item] = item.id;
+        if (parent_item_ptr != NULL) {
+            CreateNewTreeItem(parent_item_ptr, item_info.name, item_id);
+        } else {
+            int j = i;
+
+            while (parent_item_ptr == NULL && (j + 1) < ids_.size()) {
+                ++j;
+                if (id_to_info_.at(ids_.at(j)).wxitem == NULL) {
+                    parent_item_ptr = GetParentTreeItemPtrById(ids_.at(j));
+                }
+            }
+
+            if (j == ids_.size()) {
+                throw std::logic_error("bad file");
+            }
+
+            item_id = ids_.at(j);
+            wxString current_name = id_to_info_.at(item_id).name;
+
+            if (id_to_info_.at(item_id).status == ItemStatus::Deleted) {
+                continue;
+            }
+
+            CreateNewTreeItem(parent_item_ptr, current_name, item_id);
+
+            --i; // step back
         }
     }
 
     treeCtrl_->Expand(treeCtrl_->GetRootItem());
 }
 
-TreeItem wxLogic::tokenizer(wxString str, wxString delim) {
+void wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id) {
+    auto new_item_ptr = treeCtrl_->AppendItem(parent_ptr, name);
+
+    id_to_info_[item_id].wxitem = new_item_ptr;
+    wxitem_to_id_[new_item_ptr] = item_id;
+}
+
+wxVector<wxString> wxLogic::tokenizer(wxString str, wxString delim) {
     wxVector<wxString> vs;
 
     size_t pos;
@@ -129,20 +278,19 @@ TreeItem wxLogic::tokenizer(wxString str, wxString delim) {
         str = str.substr(pos + 1);
     } while (pos != wxString::npos);
 
-    int id = wxAtoi(vs[0]);
-    int parent_id = wxAtoi(vs[1]);
-    wxString raw_name = vs[2];
-    wxString raw_comment = vs[3];
-    wxString raw_status = vs[4];
+    return vs;
+}
 
-    ItemStatus status;
-    if (raw_status == "N") {
-        status = ItemStatus::Normal;
-    } else if (raw_status == "D") {
-        status = ItemStatus::Deleted;
+void wxLogic::DeleteItem(wxTreeItemId item_ptr) {
+    if (item_ptr == NULL) {
+        return;
     }
 
-    TreeItem ti{ id, parent_id, NULL, raw_name, raw_comment, status };
+    auto item_id = wxitem_to_id_.at(item_ptr);
 
-    return ti;
+    id_to_info_[item_id].status = ItemStatus::Deleted;
+    id_to_info_[item_id].name.Clear();
+    id_to_info_[item_id].comment.Clear();
+
+    treeCtrl_->Delete(item_ptr);
 }

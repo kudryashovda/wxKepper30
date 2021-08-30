@@ -1,11 +1,8 @@
 #pragma once
 
 #include "wxLogic.h"
-#include <wx/dir.h>
-#include <wx/filename.h>
 #include <wx/listbox.h>
 #include <wx/numdlg.h>
-#include <wx/textfile.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
@@ -30,14 +27,14 @@ private:
     wxListBox* listBox;
 
     void BindEvents();
-    void InitTreeCtrl();
 
 public:
     void OnBtnAddClick(wxCommandEvent& event);
     void onTreeItemClick(wxCommandEvent& event);
     void onPressbtnExport(wxCommandEvent& event);
     void onPressbtnImport(wxCommandEvent& event);
-    
+    void onPressbtnDel(wxCommandEvent & event);
+
     void ShowCard(const TreeItem& info);
 };
 

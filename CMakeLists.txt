@@ -9,6 +9,7 @@ aux_source_directory(. SRC_LIST)
 add_executable(${PROJECT_NAME} ${SRC_LIST} resources.rc)
 
 find_package(wxWidgets)
+# sudo apt install libwxbase*-dev libwxgtk*-dev
 
 set(wxWidgets_CONFIGURATION mswu)
 include(${wxWidgets_USE_FILE})
