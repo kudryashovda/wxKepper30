@@ -12,11 +12,19 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
     int target_item_id = wxitem_to_id_.at(target);
 
     auto new_item = treeCtrl_->AppendItem(target, name);
-    int new_item_id = ids_.size();
+    long new_item_id;
+
+    if(!id_to_info_.at(0).comment.ToLong(&new_item_id)) {
+        new_item_id  = 1;
+    }
+
     ids_.push_back(new_item_id);
 
     id_to_info_[new_item_id] = { new_item_id, target_item_id, new_item, name, comment, ItemStatus::Normal };
     wxitem_to_id_[new_item] = new_item_id;
+
+    id_to_info_[0].comment.clear();
+    id_to_info_[0].comment << (new_item_id + 1);
 
     return new_item;
 }

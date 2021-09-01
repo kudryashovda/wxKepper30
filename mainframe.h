@@ -33,9 +33,11 @@ public:
     void onTreeItemClick(wxCommandEvent& event);
     void onPressbtnExport(wxCommandEvent& event);
     void onPressbtnImport(wxCommandEvent& event);
-    void onPressbtnDel(wxCommandEvent & event);
+    void onPressbtnDel(wxCommandEvent& event);
+    void onPressbtnCut(wxCommandEvent& event);
 
     void ShowCard(const TreeItem& info);
+    void AppendItems(wxTreeItemId selected_item, int count);
 };
 
 class DlgAppendItem : public wxDialog {

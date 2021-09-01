@@ -1,16 +1,16 @@
 #pragma once
 
-#include <unordered_map>
-#include <map>
-#include <vector>
 #include <fstream>
+#include <map>
+#include <unordered_map>
+#include <vector>
 
 #include <filesystem>
 
+#include <algorithm>
 #include <wx/numdlg.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
-#include <algorithm>
 
 #include "utils.h"
 
@@ -34,7 +34,6 @@ struct TreeItem {
 class wxLogic {
 public:
     void SetTree(wxTreeCtrl* treeCtrl);
-    // wxTreeItemId CreateRootItem(const wxString& str);
     wxTreeItemId AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
     const TreeItem& GetTreeItemInfo(const wxTreeItemId& item);
     void SaveTree();

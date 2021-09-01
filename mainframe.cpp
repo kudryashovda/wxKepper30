@@ -192,6 +192,7 @@ void MainFrame::BindEvents() {
     btnExport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnExport, this);
     btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
     btnDel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDel, this);
+    btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
 }
 
 void MainFrame::ShowCard(const TreeItem& info) {
@@ -200,8 +201,7 @@ void MainFrame::ShowCard(const TreeItem& info) {
     tc->SetValue(info.comment);
 }
 
-void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
-    auto selected_item = treeCtrl->GetFocusedItem();
+void MainFrame::AppendItems(wxTreeItemId selected_item, int count) {
     if (selected_item == NULL) {
         return;
     }
@@ -213,13 +213,41 @@ void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
     wxString name = dlg.dlgEdtText->GetValue();
     wxString comment = dlg.dlgComments->GetValue();
 
-    logic_.AppendTreeItem(selected_item, name, comment);
+    for (int i = 0; i < count; ++i) {
+        wxString suffix;
+        if (count > 1) {
+            suffix << (i + 1);
+        }
+        logic_.AppendTreeItem(selected_item, name + suffix, comment);
+    }
 
     treeCtrl->Expand(selected_item);
 }
 
+void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
+    auto selected_item = treeCtrl->GetFocusedItem();
+
+    AppendItems(selected_item, 1);
+}
+
+void MainFrame::onPressbtnCut(wxCommandEvent& event) {
+    auto selected_item = treeCtrl->GetFocusedItem();
+
+    wxNumberEntryDialog dlgCut(this, "Cut the sample into", "Number of samples", "Cut", 1, 0, 100);
+    if (dlgCut.ShowModal() != wxID_OK) {
+        return;
+    }
+    int items_count = dlgCut.GetValue();
+
+    AppendItems(selected_item, items_count);
+}
+
 void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     auto selected_item = treeCtrl->GetFocusedItem();
+
+    if (selected_item == treeCtrl->GetRootItem()) {
+        return;
+    }
 
     auto info = logic_.GetTreeItemInfo(selected_item);
 
