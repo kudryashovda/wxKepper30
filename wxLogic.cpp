@@ -183,16 +183,48 @@ wxVector<wxString> wxLogic::tokenizer(wxString str, wxString delim) {
     return vs;
 }
 
-void wxLogic::DeleteItem(wxTreeItemId item_ptr) {
+bool wxLogic::ItemHasChild(wxTreeItemId item_ptr) {
     if (item_ptr == NULL) {
-        return;
+        return false;
     }
 
     auto item_id = wxitem_to_id_.at(item_ptr);
 
-    id_to_info_[item_id].status = ItemStatus::Deleted;
-    id_to_info_[item_id].name.Clear();
-    id_to_info_[item_id].comment.Clear();
+    for (const auto& it : id_to_info_) {
+        if (it.second.parent_id == item_id) {
+            return true;
+        }
+    }
 
-    treeCtrl_->Delete(item_ptr);
+    return false;
+}
+
+int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
+
+    if (item_ptr == NULL) {
+        return -1;
+    }
+
+    auto item_id = wxitem_to_id_.at(item_ptr);
+
+    if (item_id == 0) {
+        return -1;
+    }
+
+    if (ItemHasChild(item_ptr)) {
+        return -1;
+    }
+
+    // id_to_info_[item_id].status = ItemStatus::Deleted;
+    // id_to_info_[item_id].name.Clear();
+    // id_to_info_[item_id].comment.Clear();
+
+    id_to_info_.erase(item_id);
+    wxitem_to_id_.erase(item_ptr);
+
+    ids_.erase(std::remove(ids_.begin(), ids_.end(), item_id),
+               ids_.end());
+
+
+    return 0; // is Ok
 }

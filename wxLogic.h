@@ -10,6 +10,7 @@
 #include <wx/numdlg.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
+#include <algorithm>
 
 #include "utils.h"
 
@@ -38,9 +39,10 @@ public:
     void SaveTree();
     void LoadTree();
     wxVector<wxString> tokenizer(wxString str, wxString delim);
-    wxTreeItemId GetParentTreeItemPtrById(int id);
+    wxTreeItemId GetParentTreeItemPtrById(int item_id);
     void CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id);
-    void DeleteItem(wxTreeItemId item_ptr);
+    int DeleteItem(wxTreeItemId item_ptr);
+    bool ItemHasChild(wxTreeItemId item_ptr);
 
 private:
     const fs::path workdir_ = fs::current_path();

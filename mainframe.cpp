@@ -54,7 +54,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     nameBarSizer->Add(edtName, 0, wxEXPAND, 0);
 
     lblId = new wxStaticText(pnl, wxID_ANY, "");
-    edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | style_,
+    edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
     edtId->Refresh();
 
@@ -241,5 +241,9 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
         return;
     }
 
-    logic_.DeleteItem(selected_item);
+    auto status = logic_.DeleteItem(selected_item);
+
+    if (status == 0) {
+        treeCtrl->Delete(selected_item);
+    }
 }
