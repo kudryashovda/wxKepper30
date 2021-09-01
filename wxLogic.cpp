@@ -48,8 +48,8 @@ void wxLogic::SaveTree() {
         wxChar status = 'U';
         if (item.status == ItemStatus::Normal) {
             status = 'N';
-        } else if (item.status == ItemStatus::Deleted) {
-            status = 'D';
+        } else if (item.status == ItemStatus::Archived) {
+            status = 'A';
         };
 
         wxString line = wxString::Format(wxT("%d\t%d\t%s\t%s\t%c"), id, item.parent_id, item.name, item.comment, status);
@@ -106,8 +106,8 @@ void wxLogic::LoadTree() {
 
         wxString raw_status = tokens[4];
         ti.status = ItemStatus::Normal;
-        if (raw_status == "D") {
-            ti.status = ItemStatus::Deleted;
+        if (raw_status == "A") {
+            ti.status = ItemStatus::Archived;
         }
 
         // Remove screen slashes
@@ -123,7 +123,7 @@ void wxLogic::LoadTree() {
         auto item_id = ids_.at(i);
         auto item_info = id_to_info_.at(item_id);
 
-        if (item_info.wxitem != NULL || item_info.status == ItemStatus::Deleted) {
+        if (item_info.wxitem != NULL || item_info.status == ItemStatus::Archived) {
             continue;
         }
 
@@ -148,7 +148,7 @@ void wxLogic::LoadTree() {
             item_id = ids_.at(j);
             wxString current_name = id_to_info_.at(item_id).name;
 
-            if (id_to_info_.at(item_id).status == ItemStatus::Deleted) {
+            if (id_to_info_.at(item_id).status == ItemStatus::Archived) {
                 continue;
             }
 
@@ -215,16 +215,11 @@ int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
         return -1;
     }
 
-    // id_to_info_[item_id].status = ItemStatus::Deleted;
-    // id_to_info_[item_id].name.Clear();
-    // id_to_info_[item_id].comment.Clear();
-
     id_to_info_.erase(item_id);
     wxitem_to_id_.erase(item_ptr);
 
     ids_.erase(std::remove(ids_.begin(), ids_.end(), item_id),
                ids_.end());
-
 
     return 0; // is Ok
 }

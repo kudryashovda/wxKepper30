@@ -18,6 +18,7 @@ namespace fs = std::filesystem;
 
 enum class ItemStatus {
     Normal,
+    Archived,
     Deleted
 };
 

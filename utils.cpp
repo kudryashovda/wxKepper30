@@ -48,6 +48,9 @@ string ScreenSpecialChars(const std::string& value) {
 
     for (const char current_char : value) {
         switch (current_char) {
+        case '\t':
+            out.append("\\t"s);
+            break;            
         case '\r':
             out.append("\\r"s);
             break;
