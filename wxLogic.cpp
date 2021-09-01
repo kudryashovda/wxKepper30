@@ -96,6 +96,9 @@ void wxLogic::LoadTree() {
     std::ifstream is(db_path_);
     std::string line;
     std::getline(is, line); // pass root string
+    // settings
+    auto settings = this->tokenizer(line, "\t");
+    id_to_info_[root_id].comment = settings[3];
 
     while (std::getline(is, line)) {
         if (line.empty()) {
