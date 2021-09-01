@@ -11,7 +11,7 @@ bool MyApp::OnInit() {
 
     wxLogic logic;
 
-    wxString title("KEEPer");
+    wxString title("Keeper");
     MainFrame* frame = new MainFrame(title, logic);
     frame->Show(true);
 

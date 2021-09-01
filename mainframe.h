@@ -37,7 +37,7 @@ public:
     void onPressbtnCut(wxCommandEvent& event);
 
     void ShowCard(const TreeItem& info);
-    void AppendItems(wxTreeItemId selected_item, int count);
+    void AppendItems(const wxArrayTreeItemIds& selected_items, int count);
 };
 
 class DlgAppendItem : public wxDialog {

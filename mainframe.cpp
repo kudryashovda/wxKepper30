@@ -201,8 +201,8 @@ void MainFrame::ShowCard(const TreeItem& info) {
     tc->SetValue(info.comment);
 }
 
-void MainFrame::AppendItems(wxTreeItemId selected_item, int count) {
-    if (selected_item == NULL) {
+void MainFrame::AppendItems(const wxArrayTreeItemIds& selected_items, int count) {
+    if (selected_items.empty()) {
         return;
     }
 
@@ -213,25 +213,28 @@ void MainFrame::AppendItems(wxTreeItemId selected_item, int count) {
     wxString name = dlg.dlgEdtText->GetValue();
     wxString comment = dlg.dlgComments->GetValue();
 
-    for (int i = 0; i < count; ++i) {
-        wxString suffix;
-        if (count > 1) {
-            suffix << (i + 1);
+    for (const auto& selected_item : selected_items) {
+        for (int i = 0; i < count; ++i) {
+            wxString suffix;
+            if (count > 1) {
+                suffix << (i + 1);
+            }
+            logic_.AppendTreeItem(selected_item, name + suffix, comment);
+            treeCtrl->Expand(selected_item);
         }
-        logic_.AppendTreeItem(selected_item, name + suffix, comment);
     }
-
-    treeCtrl->Expand(selected_item);
 }
 
 void MainFrame::OnBtnAddClick(wxCommandEvent& event) {
-    auto selected_item = treeCtrl->GetFocusedItem();
+    wxArrayTreeItemIds selected_items;
+    treeCtrl->GetSelections(selected_items);
 
-    AppendItems(selected_item, 1);
+    AppendItems(selected_items, 1);
 }
 
 void MainFrame::onPressbtnCut(wxCommandEvent& event) {
-    auto selected_item = treeCtrl->GetFocusedItem();
+    wxArrayTreeItemIds selected_items;
+    treeCtrl->GetSelections(selected_items);
 
     wxNumberEntryDialog dlgCut(this, "Cut the sample into", "Number of samples", "Cut", 1, 0, 100);
     if (dlgCut.ShowModal() != wxID_OK) {
@@ -239,7 +242,7 @@ void MainFrame::onPressbtnCut(wxCommandEvent& event) {
     }
     int items_count = dlgCut.GetValue();
 
-    AppendItems(selected_item, items_count);
+    AppendItems(selected_items, items_count);
 }
 
 void MainFrame::onTreeItemClick(wxCommandEvent& event) {

@@ -14,8 +14,8 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
     auto new_item = treeCtrl_->AppendItem(target, name);
     long new_item_id;
 
-    if(!id_to_info_.at(0).comment.ToLong(&new_item_id)) {
-        new_item_id  = 1;
+    if (!id_to_info_.at(0).comment.ToLong(&new_item_id)) {
+        new_item_id = 1;
     }
 
     ids_.push_back(new_item_id);
