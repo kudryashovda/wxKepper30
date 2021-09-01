@@ -11,6 +11,8 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
+#include "utils.h"
+
 namespace fs = std::filesystem;
 
 enum class ItemStatus {

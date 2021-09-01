@@ -40,16 +40,10 @@ void wxLogic::SaveTree() {
         TreeItem item = id_to_info_.at(id); // not ref
 
         item.name.ToUTF8();
-        item.name.Replace('\n', "\\n");
-        item.name.Replace('\t', "\\t");
+        item.name = utils::ScreenSpecialChars(item.name.ToStdString());
 
         item.comment.ToUTF8();
-
-        // item.comment.Replace("\\t", "\\\\t");
-        // item.comment.Replace('\\', "\\\\");
-
-        item.comment.Replace('\\', "\\\\");
-        item.comment.Replace('\n', "\\n");
+        item.comment = utils::ScreenSpecialChars(item.comment.ToStdString());
 
         wxChar status = 'U';
         if (item.status == ItemStatus::Normal) {
@@ -116,12 +110,9 @@ void wxLogic::LoadTree() {
             ti.status = ItemStatus::Deleted;
         }
 
-        // ti.name.Replace("\\t", '\t');
-        // ti.name.Replace("\\n", '\n');
-
-        // ti.comment.Replace("\\t", '\t');
-        ti.comment.Replace("\\n", '\n');
-        ti.comment.Replace("\\\\n", "\\n"); // !!! error
+        // Remove screen slashes
+        ti.name = utils::TransformToSpecialChars(ti.name.ToStdString());
+        ti.comment = utils::TransformToSpecialChars(ti.comment.ToStdString());
 
         ids_.push_back(ti.id);
         id_to_info_[ti.id] = ti;
