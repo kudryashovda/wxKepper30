@@ -11,7 +11,6 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
 
     int target_item_id = wxitem_to_id_.at(target);
 
-    auto new_item = treeCtrl_->AppendItem(target, name);
     long new_item_id;
 
     if (!id_to_info_.at(0).comment.ToLong(&new_item_id)) {
@@ -20,13 +19,33 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
 
     ids_.push_back(new_item_id);
 
-    id_to_info_[new_item_id] = { new_item_id, target_item_id, new_item, name, comment, ItemStatus::Normal };
-    wxitem_to_id_[new_item] = new_item_id;
+    auto new_item = CreateNewTreeItem(target, name, new_item_id);
 
+    id_to_info_[new_item_id].parent_id = target_item_id;
+    id_to_info_[new_item_id].name = name;
+    id_to_info_[new_item_id].comment = comment;
+    id_to_info_[new_item_id].status = ItemStatus::Normal;
+
+    // To internal storage config
     id_to_info_[0].comment.clear();
     id_to_info_[0].comment << (new_item_id + 1);
 
+    this->SaveTree();
+
     return new_item;
+}
+
+void wxLogic::UpdateTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment) {
+    if (target == NULL) {
+        return;
+    }
+
+    int target_item_id = wxitem_to_id_.at(target);
+
+    id_to_info_[target_item_id].name = name;
+    id_to_info_[target_item_id].comment = comment;
+
+    this->SaveTree();
 }
 
 const TreeItem& wxLogic::GetTreeItemInfo(const wxTreeItemId& item) {
@@ -172,11 +191,14 @@ void wxLogic::LoadTree() {
     treeCtrl_->Expand(treeCtrl_->GetRootItem());
 }
 
-void wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id) {
+wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id) {
     auto new_item_ptr = treeCtrl_->AppendItem(parent_ptr, name);
 
+    id_to_info_[item_id].id = item_id;
     id_to_info_[item_id].wxitem = new_item_ptr;
     wxitem_to_id_[new_item_ptr] = item_id;
+
+    return new_item_ptr;
 }
 
 wxVector<wxString> wxLogic::tokenizer(wxString str, wxString delim) {
@@ -231,6 +253,8 @@ int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
 
     ids_.erase(std::remove(ids_.begin(), ids_.end(), item_id),
                ids_.end());
+
+    this->SaveTree();               
 
     return 0; // is Ok
 }

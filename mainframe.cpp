@@ -193,7 +193,23 @@ void MainFrame::BindEvents() {
     btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
     btnDel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDel, this);
     btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
+    btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);    
 }
+
+void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
+    wxTreeItemId selected_item = treeCtrl->GetFocusedItem();
+    if (!selected_item.IsOk()) {
+        return;
+    }
+
+    wxString name = edtName->GetValue();
+    wxString comment = tc->GetValue();
+
+    logic_.UpdateTreeItem(selected_item, name, comment);
+
+    // Update tree item
+    treeCtrl->SetItemText(selected_item, name);
+} 
 
 void MainFrame::ShowCard(const TreeItem& info) {
     edtId->SetValue(std::to_string(info.id));
@@ -266,6 +282,16 @@ void MainFrame::onPressbtnImport(wxCommandEvent& event) {
 }
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
+
+    wxMessageDialog* dlgItem = new wxMessageDialog(
+        NULL, wxT("Are you sure to delete item?"), wxT("Question"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+    if (dlgItem->ShowModal() == wxID_NO) {
+        dlgItem->Destroy();
+        return;
+    }
+    dlgItem->Destroy();
+
+
     auto selected_item = treeCtrl->GetFocusedItem();
 
     if (selected_item == NULL) {

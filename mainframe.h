@@ -35,6 +35,7 @@ public:
     void onPressbtnImport(wxCommandEvent& event);
     void onPressbtnDel(wxCommandEvent& event);
     void onPressbtnCut(wxCommandEvent& event);
+    void onPressbtnSaveItemData(wxCommandEvent& event);
 
     void ShowCard(const TreeItem& info);
     void AppendItems(const wxArrayTreeItemIds& selected_items, int count);

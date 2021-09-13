@@ -35,12 +35,14 @@ class wxLogic {
 public:
     void SetTree(wxTreeCtrl* treeCtrl);
     wxTreeItemId AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
+    void UpdateTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
+
     const TreeItem& GetTreeItemInfo(const wxTreeItemId& item);
     void SaveTree();
     void LoadTree();
     wxVector<wxString> tokenizer(wxString str, wxString delim);
     wxTreeItemId GetParentTreeItemPtrById(int item_id);
-    void CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id);
+    wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id);
     int DeleteItem(wxTreeItemId item_ptr);
     bool ItemHasChild(wxTreeItemId item_ptr);
 
