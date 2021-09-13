@@ -30,18 +30,18 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     btnCut = new wxButton(pnl, wxID_ANY, "Cut", wxDefaultPosition, wxDefaultSize, style_);
     btnAdd = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, style_);
     btnDel = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, style_);
-    btnExport = new wxButton(pnl, wxID_ANY, "Export", wxDefaultPosition, wxDefaultSize, style_);
-    btnImport = new wxButton(pnl, wxID_ANY, "Import", wxDefaultPosition, wxDefaultSize, style_);
+    // btnExport = new wxButton(pnl, wxID_ANY, "Export", wxDefaultPosition, wxDefaultSize, style_);
+    // btnImport = new wxButton(pnl, wxID_ANY, "Import", wxDefaultPosition, wxDefaultSize, style_);
 
     btnGoto = new wxButton(pnl, wxID_ANY, "Goto ID", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
 
-    gsTopBtns = new wxGridSizer(1, 5, 1, 1);
+    gsTopBtns = new wxGridSizer(1, 3, 1, 1); // 3 - buttons count in grid
     gsTopBtns->Add(btnCut, 1, wxEXPAND, 0);
     gsTopBtns->Add(btnAdd, 1, wxEXPAND, 0);
     gsTopBtns->Add(btnDel, 1, wxEXPAND, 0);
-    gsTopBtns->Add(btnExport, 1, wxEXPAND, 0);
-    gsTopBtns->Add(btnImport, 1, wxEXPAND, 0);
+    // gsTopBtns->Add(btnExport, 1, wxEXPAND, 0);
+    // gsTopBtns->Add(btnImport, 1, wxEXPAND, 0);
 
     lblName = new wxStaticText(pnl, wxID_ANY, "Name:");
     edtName = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
@@ -189,16 +189,21 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
 void MainFrame::BindEvents() {
     btnAdd->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::OnBtnAddClick, this);
     treeCtrl->Bind(wxEVT_TREE_SEL_CHANGED, &MainFrame::onTreeItemClick, this);
-    btnExport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnExport, this);
-    btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
+    // btnExport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnExport, this);
+    // btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
     btnDel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDel, this);
     btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
-    btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);    
+    btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
+    btnGoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnGotoId, this);
 }
 
 void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
     wxTreeItemId selected_item = treeCtrl->GetFocusedItem();
     if (!selected_item.IsOk()) {
+        return;
+    }
+
+    if (selected_item == treeCtrl->GetRootItem()) {
         return;
     }
 
@@ -209,7 +214,7 @@ void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
 
     // Update tree item
     treeCtrl->SetItemText(selected_item, name);
-} 
+}
 
 void MainFrame::ShowCard(const TreeItem& info) {
     edtId->SetValue(std::to_string(info.id));
@@ -265,6 +270,9 @@ void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     auto selected_item = treeCtrl->GetFocusedItem();
 
     if (selected_item == treeCtrl->GetRootItem()) {
+        tc->Clear();
+        edtName->Clear();
+
         return;
     }
 
@@ -273,13 +281,13 @@ void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     this->ShowCard(info);
 }
 
-void MainFrame::onPressbtnExport(wxCommandEvent& event) {
-    logic_.SaveTree();
-}
+// void MainFrame::onPressbtnExport(wxCommandEvent& event) {
+//     logic_.SaveTree();
+// }
 
-void MainFrame::onPressbtnImport(wxCommandEvent& event) {
-    logic_.LoadTree();
-}
+// void MainFrame::onPressbtnImport(wxCommandEvent& event) {
+//     logic_.LoadTree();
+// }
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
 
@@ -290,7 +298,6 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
         return;
     }
     dlgItem->Destroy();
-
 
     auto selected_item = treeCtrl->GetFocusedItem();
 
@@ -303,4 +310,14 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
     if (status == 0) {
         treeCtrl->Delete(selected_item);
     }
+}
+
+void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
+    wxNumberEntryDialog dlg(this, "", "Enter ID number", "Goto ID", 0, 0, std::numeric_limits<int>::max());
+    if (dlg.ShowModal() != wxID_OK)
+        return;
+
+    size_t ni = dlg.GetValue();
+
+    // showItemDataById(ni);
 }
