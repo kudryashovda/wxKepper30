@@ -37,8 +37,8 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
                            wxDefaultValidator, wxTextCtrlNameStr);
 
     gsTopBtns = new wxGridSizer(1, 3, 1, 1); // 3 - buttons count in grid
-    gsTopBtns->Add(btnCut, 1, wxEXPAND, 0);
     gsTopBtns->Add(btnAdd, 1, wxEXPAND, 0);
+    gsTopBtns->Add(btnCut, 1, wxEXPAND, 0);
     gsTopBtns->Add(btnDel, 1, wxEXPAND, 0);
     // gsTopBtns->Add(btnExport, 1, wxEXPAND, 0);
     // gsTopBtns->Add(btnImport, 1, wxEXPAND, 0);
