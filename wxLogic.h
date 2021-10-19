@@ -38,6 +38,7 @@ public:
     void UpdateTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
 
     const TreeItem& GetTreeItemInfo(const wxTreeItemId& item);
+    const TreeItem& GetTreeItemInfo(int item_id);
     void SaveTree();
     void LoadTree();
     wxVector<wxString> tokenizer(wxString str, wxString delim);
@@ -45,6 +46,7 @@ public:
     wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id);
     int DeleteItem(wxTreeItemId item_ptr);
     bool ItemHasChild(wxTreeItemId item_ptr);
+    bool IsItemIdExists(int item_id);
 
 private:
     const fs::path workdir_ = fs::current_path();

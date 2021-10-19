@@ -180,7 +180,7 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
     SetMinSize(ws); // linux
 #endif
 
-    SetClientSize(ws); //ClientToWindowSize(ws));
+    SetClientSize(ws); // ClientToWindowSize(ws));
 
     dlgEdtText->SetFocus();
     dlgEdtText->SelectAll();
@@ -312,12 +312,31 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
     }
 }
 
+void MainFrame::expandAllParents(wxTreeItemId item) {
+    do {
+        if (treeCtrl->ItemHasChildren(item))
+            treeCtrl->Expand(item);
+
+        item = treeCtrl->GetItemParent(item);
+    } while (item.IsOk());
+}
+
 void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
     wxNumberEntryDialog dlg(this, "", "Enter ID number", "Goto ID", 0, 0, std::numeric_limits<int>::max());
     if (dlg.ShowModal() != wxID_OK)
         return;
 
-    size_t ni = dlg.GetValue();
+    int item_id = dlg.GetValue();
+    if (!logic_.IsItemIdExists(item_id)) {
+        wxMessageBox("ID is not found", "Warning");
+        return;
+    }
 
-    // showItemDataById(ni);
+    auto info = logic_.GetTreeItemInfo(item_id);
+
+    ShowCard(info);
+    expandAllParents(info.wxitem);
+
+    treeCtrl->SelectItem(info.wxitem, true);
+    treeCtrl->SetFocusedItem(info.wxitem);
 }
