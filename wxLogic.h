@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <filesystem>
+#include <experimental/filesystem>
 
 #include <algorithm>
 #include <wx/numdlg.h>
@@ -14,7 +14,7 @@
 
 #include "utils.h"
 
-namespace fs = std::filesystem;
+namespace fs = std::experimental::filesystem;
 
 enum class ItemStatus {
     Normal,

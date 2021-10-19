@@ -13,7 +13,7 @@ find_package(wxWidgets)
 
 set(wxWidgets_CONFIGURATION mswu)
 include(${wxWidgets_USE_FILE})
-target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} -lstdc++fs)
 
 #set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wsign-conversion -Wpedantic -Wcast-align \
 # -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wenum-compare -Wfloat-equal\
