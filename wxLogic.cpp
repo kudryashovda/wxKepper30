@@ -56,6 +56,10 @@ const TreeItem& wxLogic::GetTreeItemInfo(const wxTreeItemId& item) {
     return info;
 }
 
+const TreeItem& wxLogic::GetTreeItemInfo(int item_id) {
+    return id_to_info_.at(item_id);
+}
+
 void wxLogic::SaveTree() {
     if (!fs::exists(db_path_)) {
         fs::create_directories(db_workdir_);
@@ -257,4 +261,12 @@ int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
     this->SaveTree();               
 
     return 0; // is Ok
+}
+
+bool wxLogic::IsItemIdExists(int item_id) {
+    if (id_to_info_.count(item_id) > 0) {
+        return true;
+    }
+
+    return false;
 }
