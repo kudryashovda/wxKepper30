@@ -1,5 +1,7 @@
 #include "wxLogic.h"
 
+using namespace std;
+
 void wxLogic::SetTree(wxTreeCtrl* treeCtrl) {
     treeCtrl_ = treeCtrl;
 }
@@ -269,4 +271,19 @@ bool wxLogic::IsItemIdExists(int item_id) {
     }
 
     return false;
+}
+
+void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
+    if (!item_ptr) {
+        return;
+    }
+
+    const int item_id = wxitem_to_id_.at(item_ptr);
+
+    auto file_path = files_workdir_ / to_string(item_id) / filename;
+    if (!fs::exists(file_path.parent_path())) {
+        fs::create_directories(file_path.parent_path());
+    }
+
+    std::ofstream output(file_path);
 }
