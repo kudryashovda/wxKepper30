@@ -47,11 +47,13 @@ public:
     int DeleteItem(wxTreeItemId item_ptr);
     bool ItemHasChild(wxTreeItemId item_ptr);
     bool IsItemIdExists(int item_id);
+    void CreateFile(wxTreeItemId item_ptr, const std::string& filename);
 
 private:
     const fs::path workdir_ = fs::current_path();
     const fs::path db_path_ = workdir_ / "data" / "db.dat";
     const fs::path db_workdir_ = db_path_.parent_path();
+    const fs::path files_workdir_ = db_path_.parent_path();
 
     wxTreeCtrl* treeCtrl_;
     std::vector<int> ids_;

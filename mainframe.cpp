@@ -75,7 +75,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
                         wxDefaultValidator, wxTextCtrlNameStr);
 
     lblListName = new wxStaticText(pnl, wxID_ANY, "Attached objects", wxDefaultPosition, wxDefaultSize, style_);
-    btnNewObject = new wxButton(pnl, wxID_ANY, "New", wxDefaultPosition, wxDefaultSize, style_);
+    btnNewObject = new wxButton(pnl, wxID_ANY, "New File", wxDefaultPosition, wxDefaultSize, style_);
     btnaddObjectsToItem = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, style_);
     btnDelObject = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, style_);
     btnRenameObj = new wxButton(pnl, wxID_ANY, "Rename", wxDefaultPosition, wxDefaultSize, style_);
@@ -195,6 +195,14 @@ void MainFrame::BindEvents() {
     btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
     btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
     btnGoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnGotoId, this);
+
+//    listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
+    btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
+//    btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnAddFile, this);
+//    btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
+//    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
+//    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
+//    btnLink->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressBtnLink, this);
 }
 
 void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
@@ -339,4 +347,29 @@ void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
 
     treeCtrl->SelectItem(info.wxitem, true);
     treeCtrl->SetFocusedItem(info.wxitem);
+}
+
+void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
+    const auto selected_item = treeCtrl->GetFocusedItem();
+
+    const wxString default_filename = "newfile.txt";
+    wxTextEntryDialog dlg(this, "Enter filename", "Create empty text file", default_filename);
+    if(dlg.ShowModal() != wxID_OK) {
+        return;
+    }
+
+    const auto filename = dlg.GetValue();
+
+    for (wxChar ch: filename) {
+        if (!isalnum(ch)) {
+            wxMessageBox("Do not use special chars", "Warning");
+            return;
+        }
+    }
+
+    if(filename.empty()) {
+        return;
+    }
+
+    logic_.CreateFile(selected_item, filename.ToStdString());
 }

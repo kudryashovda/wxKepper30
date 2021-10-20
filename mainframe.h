@@ -38,6 +38,8 @@ public:
     void onPressbtnSaveItemData(wxCommandEvent& event);
     void onPressbtnGotoId(wxCommandEvent& event);
 
+    void onPressbtnCreateFile(wxCommandEvent& event);
+
 
     void ShowCard(const TreeItem& info);
     void AppendItems(const wxArrayTreeItemIds& selected_items, int count);
