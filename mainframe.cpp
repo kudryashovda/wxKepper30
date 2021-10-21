@@ -196,13 +196,13 @@ void MainFrame::BindEvents() {
     btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
     btnGoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnGotoId, this);
 
-//    listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
+    //    listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
     btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
-//    btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnAddFile, this);
-//    btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
-//    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
-//    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
-//    btnLink->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressBtnLink, this);
+    //    btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnAddFile, this);
+    //    btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
+    //    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
+    //    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
+    //    btnLink->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressBtnLink, this);
 }
 
 void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
@@ -228,6 +228,22 @@ void MainFrame::ShowCard(const TreeItem& info) {
     edtId->SetValue(std::to_string(info.id));
     edtName->SetValue(info.name);
     tc->SetValue(info.comment);
+
+    UpdateFileBox(info);
+}
+
+void MainFrame::UpdateFileBox(const TreeItem& info) {
+    listBox->Clear();
+
+    const auto item_path = logic_.GetItemPath(info);
+    if (!fs::exists(item_path)) {
+        return;
+    }
+
+    for (const auto& entry : fs::directory_iterator(item_path)) {
+        wxString filename(entry.path().filename());
+        listBox->Append(filename);
+    }
 }
 
 void MainFrame::AppendItems(const wxArrayTreeItemIds& selected_items, int count) {
@@ -354,22 +370,26 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
     const wxString default_filename = "newfile.txt";
     wxTextEntryDialog dlg(this, "Enter filename", "Create empty text file", default_filename);
-    if(dlg.ShowModal() != wxID_OK) {
+    if (dlg.ShowModal() != wxID_OK) {
         return;
     }
 
     const auto filename = dlg.GetValue();
 
-    for (wxChar ch: filename) {
-        if (!isalnum(ch)) {
-            wxMessageBox("Do not use special chars", "Warning");
-            return;
+    for (wxChar ch : filename) {
+        if (isalnum(ch) || ch == '.') {
+            continue;
         }
+        wxMessageBox("Do not use special chars", "Warning");
+        return;
     }
 
-    if(filename.empty()) {
+    if (filename.empty()) {
         return;
     }
 
     logic_.CreateFile(selected_item, filename.ToStdString());
+
+    const auto& item_info = logic_.GetTreeItemInfo(selected_item);
+    UpdateFileBox(item_info);
 }

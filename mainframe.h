@@ -44,6 +44,7 @@ public:
     void ShowCard(const TreeItem& info);
     void AppendItems(const wxArrayTreeItemIds& selected_items, int count);
     void expandAllParents(wxTreeItemId item);
+    void UpdateFileBox(const TreeItem& info);
 };
 
 class DlgAppendItem : public wxDialog {

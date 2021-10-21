@@ -260,7 +260,7 @@ int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
     ids_.erase(std::remove(ids_.begin(), ids_.end(), item_id),
                ids_.end());
 
-    this->SaveTree();               
+    this->SaveTree();
 
     return 0; // is Ok
 }
@@ -286,4 +286,8 @@ void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
     }
 
     std::ofstream output(file_path);
+}
+
+fs::path wxLogic::GetItemPath(const TreeItem& info) {
+    return files_workdir_ / std::to_string(info.id);
 }
