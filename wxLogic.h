@@ -23,8 +23,8 @@ enum class ItemStatus {
 };
 
 struct TreeItem {
-    int id;
-    int parent_id;
+    long id;
+    long parent_id;
     wxTreeItemId wxitem;
     wxString name;
     wxString comment;
@@ -38,15 +38,15 @@ public:
     void UpdateTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment);
 
     const TreeItem& GetTreeItemInfo(const wxTreeItemId& item);
-    const TreeItem& GetTreeItemInfo(int item_id);
+    const TreeItem& GetTreeItemInfo(long item_id);
     void SaveTree();
     void LoadTree();
-    wxVector<wxString> tokenizer(wxString str, wxString delim);
-    wxTreeItemId GetParentTreeItemPtrById(int item_id);
-    wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id);
+    static wxVector<wxString> tokenizer(wxString str, const wxString& delim);
+    wxTreeItemId GetParentTreeItemPtrById(long item_id);
+    wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, long item_id);
     int DeleteItem(wxTreeItemId item_ptr);
     bool ItemHasChild(wxTreeItemId item_ptr);
-    bool IsItemIdExists(int item_id);
+    bool IsItemIdExists(long item_id);
     void CreateFile(wxTreeItemId item_ptr, const std::string& filename);
     fs::path GetItemPath(const TreeItem& info);
 
@@ -57,7 +57,7 @@ private:
     const fs::path files_workdir_ = db_path_.parent_path();
 
     wxTreeCtrl* treeCtrl_;
-    std::vector<int> ids_;
-    std::map<int, TreeItem> id_to_info_;
-    std::map<wxTreeItemId, int> wxitem_to_id_;
+    std::vector<long> ids_;
+    std::map<long, TreeItem> id_to_info_;
+    std::map<wxTreeItemId, long> wxitem_to_id_;
 };

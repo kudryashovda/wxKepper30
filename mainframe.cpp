@@ -1,7 +1,7 @@
 #include "mainframe.h"
 
 MainFrame::MainFrame(const wxString& title, wxLogic& logic)
-    : wxFrame(NULL, wxID_ANY, title)
+    : wxFrame(nullptr, wxID_ANY, title)
     , logic_(logic) {
 
 /* buttons and edits style */
@@ -91,7 +91,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     gsObjBtns->Add(btnPhoto, 1, wxEXPAND, 0);
     gsObjBtns->Add(btnLink, 1, wxEXPAND, 0);
 
-    listBox = new wxListBox(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, style_);
+    listBox = new wxListBox(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, style_);
 
     btnSaveItemData = new wxButton(pnl, wxID_ANY, "Save", wxDefaultPosition, wxDefaultSize, style_);
 
@@ -148,9 +148,9 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title, long style_)
     : wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
     , style_(style_) {
-    wxBoxSizer* borderSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* borderSizer = new wxBoxSizer(wxVERTICAL);
+    auto* vSizer = new wxBoxSizer(wxVERTICAL);
+    auto* hSizer = new wxBoxSizer(wxHORIZONTAL);
 
     dlgEdtText = new wxTextCtrl(this, wxID_ANY, "Name", wxDefaultPosition, wxDefaultSize, style_);
     dlgComments = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(100, 60), wxTE_MULTILINE | style_);
@@ -246,7 +246,7 @@ void MainFrame::UpdateFileBox(const TreeItem& info) {
     }
 }
 
-void MainFrame::AppendItems(const wxArrayTreeItemIds& selected_items, int count) {
+void MainFrame::AppendItems(const wxArrayTreeItemIds& selected_items, long count) {
     if (selected_items.empty()) {
         return;
     }
@@ -285,7 +285,7 @@ void MainFrame::onPressbtnCut(wxCommandEvent& event) {
     if (dlgCut.ShowModal() != wxID_OK) {
         return;
     }
-    int items_count = dlgCut.GetValue();
+    auto items_count = dlgCut.GetValue();
 
     AppendItems(selected_items, items_count);
 }
@@ -315,8 +315,8 @@ void MainFrame::onTreeItemClick(wxCommandEvent& event) {
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
 
-    wxMessageDialog* dlgItem = new wxMessageDialog(
-        NULL, wxT("Are you sure to delete item?"), wxT("Question"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+    auto* dlgItem = new wxMessageDialog(
+        nullptr, wxT("Are you sure to delete item?"), wxT("Question"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
     if (dlgItem->ShowModal() == wxID_NO) {
         dlgItem->Destroy();
         return;
@@ -325,7 +325,7 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
 
     auto selected_item = treeCtrl->GetFocusedItem();
 
-    if (selected_item == NULL) {
+    if (!selected_item) {
         return;
     }
 
@@ -338,8 +338,9 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
 
 void MainFrame::expandAllParents(wxTreeItemId item) {
     do {
-        if (treeCtrl->ItemHasChildren(item))
+        if (treeCtrl->ItemHasChildren(item)) {
             treeCtrl->Expand(item);
+        }
 
         item = treeCtrl->GetItemParent(item);
     } while (item.IsOk());
@@ -350,7 +351,7 @@ void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
     if (dlg.ShowModal() != wxID_OK)
         return;
 
-    int item_id = dlg.GetValue();
+    auto item_id = dlg.GetValue();
     if (!logic_.IsItemIdExists(item_id)) {
         wxMessageBox("ID is not found", "Warning");
         return;

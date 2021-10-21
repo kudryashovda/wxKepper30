@@ -40,9 +40,8 @@ public:
 
     void onPressbtnCreateFile(wxCommandEvent& event);
 
-
     void ShowCard(const TreeItem& info);
-    void AppendItems(const wxArrayTreeItemIds& selected_items, int count);
+    void AppendItems(const wxArrayTreeItemIds& selected_items, long count);
     void expandAllParents(wxTreeItemId item);
     void UpdateFileBox(const TreeItem& info);
 };
@@ -52,7 +51,6 @@ public:
     DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& title, long my_style);
 
     wxTextCtrl *dlgEdtText, *dlgComments;
-
 private:
     long style_;
 };

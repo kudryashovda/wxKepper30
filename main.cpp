@@ -3,7 +3,7 @@
 
 class MyApp : public wxApp {
 public:
-    virtual bool OnInit();
+    bool OnInit() override;
 };
 
 bool MyApp::OnInit() {
@@ -12,11 +12,10 @@ bool MyApp::OnInit() {
     wxLogic logic;
 
     wxString title("Keeper");
-    MainFrame* frame = new MainFrame(title, logic);
+    auto* frame = new MainFrame(title, logic);
     frame->Show(true);
 
     return true;
 }
 
 IMPLEMENT_APP(MyApp)
-
