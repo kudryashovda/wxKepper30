@@ -48,6 +48,7 @@ public:
     bool ItemHasChild(wxTreeItemId item_ptr);
     bool IsItemIdExists(int item_id);
     void CreateFile(wxTreeItemId item_ptr, const std::string& filename);
+    fs::path GetItemPath(const TreeItem& info);
 
 private:
     const fs::path workdir_ = fs::current_path();
