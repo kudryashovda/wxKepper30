@@ -50,7 +50,7 @@ string ScreenSpecialChars(const std::string& value) {
         switch (current_char) {
         case '\t':
             out.append("\\t"s);
-            break;            
+            break;
         case '\r':
             out.append("\\r"s);
             break;
@@ -58,7 +58,7 @@ string ScreenSpecialChars(const std::string& value) {
             out.append("\\n"s);
             break;
         case '\\':
-            out.append("\\\\"s);
+            out.append(R"(\\)");
             break;
         default:
             out.push_back(current_char);

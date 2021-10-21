@@ -7,11 +7,11 @@ void wxLogic::SetTree(wxTreeCtrl* treeCtrl) {
 }
 
 wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment) {
-    if (target == NULL) {
-        return NULL;
+    if (target == nullptr) {
+        return nullptr;
     }
 
-    int target_item_id = wxitem_to_id_.at(target);
+    auto target_item_id = wxitem_to_id_.at(target);
 
     long new_item_id;
 
@@ -38,11 +38,11 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
 }
 
 void wxLogic::UpdateTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment) {
-    if (target == NULL) {
+    if (target == nullptr) {
         return;
     }
 
-    int target_item_id = wxitem_to_id_.at(target);
+    long target_item_id = wxitem_to_id_.at(target);
 
     id_to_info_[target_item_id].name = name;
     id_to_info_[target_item_id].comment = comment;
@@ -58,7 +58,7 @@ const TreeItem& wxLogic::GetTreeItemInfo(const wxTreeItemId& item) {
     return info;
 }
 
-const TreeItem& wxLogic::GetTreeItemInfo(int item_id) {
+const TreeItem& wxLogic::GetTreeItemInfo(long item_id) {
     return id_to_info_.at(item_id);
 }
 
@@ -90,8 +90,8 @@ void wxLogic::SaveTree() {
     }
 }
 
-wxTreeItemId wxLogic::GetParentTreeItemPtrById(int item_id) {
-    int parent_id = id_to_info_.at(item_id).parent_id;
+wxTreeItemId wxLogic::GetParentTreeItemPtrById(long item_id) {
+    long parent_id = id_to_info_.at(item_id).parent_id;
 
     return id_to_info_.at(parent_id).wxitem;
 }
@@ -122,7 +122,7 @@ void wxLogic::LoadTree() {
     std::string line;
     std::getline(is, line); // pass root string
     // settings
-    auto settings = this->tokenizer(line, "\t");
+    auto settings = wxLogic::tokenizer(line, "\t");
     id_to_info_[root_id].comment = settings[3];
 
     while (std::getline(is, line)) {
@@ -132,7 +132,7 @@ void wxLogic::LoadTree() {
 
         TreeItem ti;
 
-        auto tokens = this->tokenizer(line, "\t");
+        auto tokens = wxLogic::tokenizer(line, "\t");
 
         ti.id = wxAtoi(tokens[0]);
         ti.parent_id = wxAtoi(tokens[1]);
@@ -155,24 +155,24 @@ void wxLogic::LoadTree() {
     }
 
     // Fill tree
-    for (size_t i = 1; i < ids_.size(); ++i) {
+    for (long i = 1; i < ids_.size(); ++i) {
         auto item_id = ids_.at(i);
         auto item_info = id_to_info_.at(item_id);
 
-        if (item_info.wxitem != NULL || item_info.status == ItemStatus::Archived) {
+        if (item_info.wxitem != nullptr || item_info.status == ItemStatus::Archived) {
             continue;
         }
 
         auto parent_item_ptr = GetParentTreeItemPtrById(item_id);
 
-        if (parent_item_ptr != NULL) {
+        if (parent_item_ptr != nullptr) {
             CreateNewTreeItem(parent_item_ptr, item_info.name, item_id);
         } else {
-            int j = i;
+            long j = i;
 
-            while (parent_item_ptr == NULL && (j + 1) < ids_.size()) {
+            while (parent_item_ptr == nullptr && (j + 1) < ids_.size()) {
                 ++j;
-                if (id_to_info_.at(ids_.at(j)).wxitem == NULL) {
+                if (id_to_info_.at(ids_.at(j)).wxitem == nullptr) {
                     parent_item_ptr = GetParentTreeItemPtrById(ids_.at(j));
                 }
             }
@@ -197,7 +197,7 @@ void wxLogic::LoadTree() {
     treeCtrl_->Expand(treeCtrl_->GetRootItem());
 }
 
-wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, int item_id) {
+wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, long item_id) {
     auto new_item_ptr = treeCtrl_->AppendItem(parent_ptr, name);
 
     id_to_info_[item_id].id = item_id;
@@ -207,7 +207,7 @@ wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString&
     return new_item_ptr;
 }
 
-wxVector<wxString> wxLogic::tokenizer(wxString str, wxString delim) {
+wxVector<wxString> wxLogic::tokenizer(wxString str, const wxString& delim) {
     wxVector<wxString> vs;
 
     size_t pos;
@@ -223,7 +223,7 @@ wxVector<wxString> wxLogic::tokenizer(wxString str, wxString delim) {
 }
 
 bool wxLogic::ItemHasChild(wxTreeItemId item_ptr) {
-    if (item_ptr == NULL) {
+    if (item_ptr == nullptr) {
         return false;
     }
 
@@ -240,7 +240,7 @@ bool wxLogic::ItemHasChild(wxTreeItemId item_ptr) {
 
 int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
 
-    if (item_ptr == NULL) {
+    if (item_ptr == nullptr) {
         return -1;
     }
 
@@ -265,7 +265,7 @@ int wxLogic::DeleteItem(wxTreeItemId item_ptr) {
     return 0; // is Ok
 }
 
-bool wxLogic::IsItemIdExists(int item_id) {
+bool wxLogic::IsItemIdExists(long item_id) {
     if (id_to_info_.count(item_id) > 0) {
         return true;
     }
@@ -278,7 +278,7 @@ void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
         return;
     }
 
-    const int item_id = wxitem_to_id_.at(item_ptr);
+    const long item_id = wxitem_to_id_.at(item_ptr);
 
     auto file_path = files_workdir_ / to_string(item_id) / filename;
     if (!fs::exists(file_path.parent_path())) {

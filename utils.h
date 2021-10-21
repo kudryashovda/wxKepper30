@@ -8,4 +8,4 @@ namespace utils {
 std::string TransformToSpecialChars(const std::string& text);
 std::string ScreenSpecialChars(const std::string& value);
 
-}
+} // namespace utils
