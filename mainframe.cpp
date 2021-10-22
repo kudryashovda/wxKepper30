@@ -196,7 +196,7 @@ void MainFrame::BindEvents() {
     btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
     btnGoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnGotoId, this);
 
-    //    listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
+    listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
     btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
     //    btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnAddFile, this);
     //    btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
@@ -393,4 +393,22 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
     const auto& item_info = logic_.GetTreeItemInfo(selected_item);
     UpdateFileBox(item_info);
+}
+
+void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
+    const auto selected_item = treeCtrl->GetFocusedItem();
+    if (!selected_item.IsOk()) {
+        return;
+    }
+
+    wxString filename = listBox->GetString(event.GetSelection());
+
+    const auto path = logic_.GetItemPath(selected_item) / filename.ToStdString();
+    if (!exists(path)) {
+        wxMessageBox("No files found on disk", "Warning");
+        return;
+    }
+
+    /* To enable open files and folder with non-latin chars add wxSetlocale(LC_ALL, "") to to Init foo */
+    wxLaunchDefaultApplication(path.string());
 }

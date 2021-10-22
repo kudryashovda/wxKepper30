@@ -7,7 +7,7 @@ public:
 };
 
 bool MyApp::OnInit() {
-    wxSetlocale(LC_ALL, "");
+    wxSetlocale(LC_ALL, ""); // to work with non-ascii chars in filenames
 
     wxLogic logic;
 

@@ -291,3 +291,7 @@ void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
 fs::path wxLogic::GetItemPath(const TreeItem& info) {
     return files_workdir_ / std::to_string(info.id);
 }
+
+fs::path wxLogic::GetItemPath(wxTreeItemId item_ptr) {
+    return GetItemPath(GetTreeItemInfo(item_ptr));
+}
