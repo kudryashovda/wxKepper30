@@ -13,6 +13,7 @@ bool MyApp::OnInit() {
 
     wxString title("Keeper");
     auto* frame = new MainFrame(title, logic);
+    frame->SetMinSize(wxSize(800, 800));
     frame->Show(true);
 
     return true;
