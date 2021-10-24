@@ -126,7 +126,6 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 
     mainSizer->Fit(this); // resize (fit) main window based on elements inside sizer
 
-    SetMinSize(wxSize(800, 800));
     Centre(wxHORIZONTAL);
 
     BindEvents();
