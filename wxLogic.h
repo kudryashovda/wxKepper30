@@ -3,6 +3,7 @@
 #include <fstream>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <experimental/filesystem>
@@ -50,6 +51,7 @@ public:
     void CreateFile(wxTreeItemId item_ptr, const std::string& filename);
     fs::path GetItemPath(const TreeItem& info);
     fs::path GetItemPath(wxTreeItemId item_ptr);
+    static bool IsValidFilename(const std::string& filename);
 
 private:
     const fs::path workdir_ = fs::current_path();
