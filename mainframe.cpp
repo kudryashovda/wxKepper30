@@ -367,15 +367,8 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
     const auto filename = dlg.GetValue();
 
-    for (wxChar ch : filename) {
-        if (isalnum(ch) || ch == '.') {
-            continue;
-        }
-        wxMessageBox("Do not use special chars", "Warning");
-        return;
-    }
-
-    if (filename.empty()) {
+    if (filename.empty() || !wxLogic::IsValidFilename(filename.ToStdString())) {
+        wxMessageBox("Invalid filename", "Warning");
         return;
     }
 
