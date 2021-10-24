@@ -30,9 +30,6 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     btnCut = new wxButton(pnl, wxID_ANY, "Cut", wxDefaultPosition, wxDefaultSize, style_);
     btnAdd = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, style_);
     btnDel = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, style_);
-    // btnExport = new wxButton(pnl, wxID_ANY, "Export", wxDefaultPosition, wxDefaultSize, style_);
-    // btnImport = new wxButton(pnl, wxID_ANY, "Import", wxDefaultPosition, wxDefaultSize, style_);
-
     btnGoto = new wxButton(pnl, wxID_ANY, "Goto ID", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
 
@@ -40,8 +37,6 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     gsTopBtns->Add(btnAdd, 1, wxEXPAND, 0);
     gsTopBtns->Add(btnCut, 1, wxEXPAND, 0);
     gsTopBtns->Add(btnDel, 1, wxEXPAND, 0);
-    // gsTopBtns->Add(btnExport, 1, wxEXPAND, 0);
-    // gsTopBtns->Add(btnImport, 1, wxEXPAND, 0);
 
     lblName = new wxStaticText(pnl, wxID_ANY, "Name:");
     edtName = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
@@ -189,8 +184,6 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
 void MainFrame::BindEvents() {
     btnAdd->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::OnBtnAddClick, this);
     treeCtrl->Bind(wxEVT_TREE_SEL_CHANGED, &MainFrame::onTreeItemClick, this);
-    // btnExport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnExport, this);
-    // btnImport->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnImport, this);
     btnDel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDel, this);
     btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
     btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
@@ -198,8 +191,7 @@ void MainFrame::BindEvents() {
 
     listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
     btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
-    //    btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnAddFile, this);
-    //    btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
+    btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
     //    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
     //    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
     //    btnLink->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressBtnLink, this);
@@ -229,10 +221,16 @@ void MainFrame::ShowCard(const TreeItem& info) {
     edtName->SetValue(info.name);
     tc->SetValue(info.comment);
 
-    UpdateFileBox(info);
+    UpdateFileBox(listBox);
 }
 
-void MainFrame::UpdateFileBox(const TreeItem& info) {
+void MainFrame::UpdateFileBox(wxListBox* lbox) {
+    auto selected_item = treeCtrl->GetFocusedItem();
+    if (!selected_item) {
+        return;
+    }
+
+    const auto& info = logic_.GetTreeItemInfo(selected_item);
     listBox->Clear();
 
     const auto item_path = logic_.GetItemPath(info);
@@ -242,7 +240,7 @@ void MainFrame::UpdateFileBox(const TreeItem& info) {
 
     for (const auto& entry : fs::directory_iterator(item_path)) {
         wxString filename(entry.path().filename());
-        listBox->Append(filename);
+        lbox->Append(filename);
     }
 }
 
@@ -304,14 +302,6 @@ void MainFrame::onTreeItemClick(wxCommandEvent& event) {
 
     this->ShowCard(info);
 }
-
-// void MainFrame::onPressbtnExport(wxCommandEvent& event) {
-//     logic_.SaveTree();
-// }
-
-// void MainFrame::onPressbtnImport(wxCommandEvent& event) {
-//     logic_.LoadTree();
-// }
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
 
@@ -391,8 +381,12 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
     logic_.CreateFile(selected_item, filename.ToStdString());
 
-    const auto& item_info = logic_.GetTreeItemInfo(selected_item);
-    UpdateFileBox(item_info);
+    UpdateFileBox(listBox);
+}
+
+fs::path MainFrame::GetFilenameFromListbox(wxTreeItemId selected_item, int item_idx) {
+    wxString filename = listBox->GetString(item_idx);
+    return logic_.GetItemPath(selected_item) / filename.ToStdString();
 }
 
 void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
@@ -401,9 +395,7 @@ void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
         return;
     }
 
-    wxString filename = listBox->GetString(event.GetSelection());
-
-    const auto path = logic_.GetItemPath(selected_item) / filename.ToStdString();
+    const auto path = GetFilenameFromListbox(selected_item, event.GetSelection());
     if (!exists(path)) {
         wxMessageBox("No files found on disk", "Warning");
         return;
@@ -411,4 +403,37 @@ void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
 
     /* To enable open files and folder with non-latin chars add wxSetlocale(LC_ALL, "") to to Init foo */
     wxLaunchDefaultApplication(path.string());
+}
+
+void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
+    const auto selected_item = treeCtrl->GetFocusedItem();
+    if (!selected_item.IsOk() || listBox->IsEmpty()) {
+        return;
+    }
+
+    int selected_file_idx = listBox->GetSelection();
+    if (selected_file_idx == -1) {
+        return;
+    }
+
+    const auto path = GetFilenameFromListbox(selected_item, selected_file_idx);
+    if (!exists(path)) {
+        wxMessageBox("No files found on disk", "Warning");
+        return;
+    }
+
+    wxMessageDialog dlg(nullptr, wxT("Are you sure to delete file?"), wxT("Question"),
+                        wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+    if (dlg.ShowModal() == wxID_NO) {
+        return;
+    }
+
+    remove(path);
+
+    const auto parent_path = path.parent_path();
+    if (fs::is_empty(parent_path)) {
+        remove(parent_path);
+    }
+
+    UpdateFileBox(listBox);
 }

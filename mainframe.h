@@ -27,6 +27,7 @@ private:
     wxListBox* listBox;
 
     void BindEvents();
+    fs::path GetFilenameFromListbox(wxTreeItemId selected_item, int item_idx);
 
 public:
     void OnBtnAddClick(wxCommandEvent& event);
@@ -40,11 +41,12 @@ public:
 
     void onPressbtnCreateFile(wxCommandEvent& event);
     void onBoxItemDblClick(wxCommandEvent& event);
+    void onPressbtnDelFile(wxCommandEvent& event);
 
     void ShowCard(const TreeItem& info);
     void AppendItems(const wxArrayTreeItemIds& selected_items, long count);
     void expandAllParents(wxTreeItemId item);
-    void UpdateFileBox(const TreeItem& info);
+    void UpdateFileBox(wxListBox* lbox);
 };
 
 class DlgAppendItem : public wxDialog {
