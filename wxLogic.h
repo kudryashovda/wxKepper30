@@ -49,6 +49,7 @@ public:
     bool ItemHasChild(wxTreeItemId item_ptr);
     bool IsItemIdExists(long item_id);
     void CreateFile(wxTreeItemId item_ptr, const std::string& filename);
+    void CopyFiles(wxTreeItemId item_ptr, const std::vector<fs::path>& paths);
     fs::path GetItemPath(const TreeItem& info);
     fs::path GetItemPath(wxTreeItemId item_ptr);
     static bool IsValidFilename(const std::string& filename);
