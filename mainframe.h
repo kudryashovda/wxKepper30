@@ -40,6 +40,7 @@ public:
     void onPressbtnGotoId(wxCommandEvent& event);
 
     void onPressbtnCreateFile(wxCommandEvent& event);
+    void onPressbtnaddObjectsToItem(wxCommandEvent& event);
     void onBoxItemDblClick(wxCommandEvent& event);
     void onPressbtnDelFile(wxCommandEvent& event);
 

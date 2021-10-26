@@ -301,7 +301,7 @@ fs::path wxLogic::GetItemPath(wxTreeItemId item_ptr) {
     return GetItemPath(GetTreeItemInfo(item_ptr));
 }
 
-    bool wxLogic::IsValidFilename(const std::string& filename) {
+bool wxLogic::IsValidFilename(const std::string& filename) {
 
     const unordered_set<string> illegal_names = { "NUL", "CON", "PRN", "AUX", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
     if (illegal_names.find(filename) != illegal_names.end()) {
@@ -317,4 +317,28 @@ fs::path wxLogic::GetItemPath(wxTreeItemId item_ptr) {
     }
 
     return true;
+}
+
+void wxLogic::CopyFiles(wxTreeItemId item_ptr, const vector<fs::path>& paths) {
+    if (!item_ptr) {
+        return;
+    }
+
+    const long item_id = wxitem_to_id_.at(item_ptr);
+
+    auto files_dir = files_workdir_ / to_string(item_id);
+    if (!fs::exists(files_dir)) {
+        fs::create_directories(files_dir);
+    }
+
+    for (const auto& path : paths) {
+        auto dest_path = files_dir / path.filename();
+
+        while (fs::exists(dest_path)) {
+            auto new_filename = "copy_"s + dest_path.filename().string();
+            dest_path = dest_path.parent_path() / new_filename;
+        }
+
+        fs::copy(path, dest_path);
+    }
 }

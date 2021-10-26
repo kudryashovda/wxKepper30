@@ -1,5 +1,7 @@
 #include "mainframe.h"
 
+using namespace std;
+
 MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     : wxFrame(nullptr, wxID_ANY, title)
     , logic_(logic) {
@@ -190,6 +192,7 @@ void MainFrame::BindEvents() {
 
     listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
     btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
+    btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnaddObjectsToItem, this);
     btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
     //    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
     //    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
@@ -426,6 +429,32 @@ void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
     if (fs::is_empty(parent_path)) {
         remove(parent_path);
     }
+
+    UpdateFileBox(listBox);
+}
+
+void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
+    wxTreeItemId item = treeCtrl->GetFocusedItem();
+    if (!item.IsOk()) {
+        return;
+    }
+
+    wxFileDialog openFileDialog(
+        this, _("Attach file"), "", "", "", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    if (openFileDialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+
+    /* allow add multiple files */
+    wxArrayString sourceFileNames;
+    openFileDialog.GetPaths(sourceFileNames); // an array of full paths
+
+    vector<fs::path> paths;
+    for (const auto& path : sourceFileNames) {
+        paths.emplace_back(path.ToStdString());
+    }
+
+    logic_.CopyFiles(item, paths);
 
     UpdateFileBox(listBox);
 }
