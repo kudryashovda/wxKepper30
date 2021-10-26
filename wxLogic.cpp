@@ -285,6 +285,11 @@ void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
         fs::create_directories(file_path.parent_path());
     }
 
+    while (fs::exists(file_path)) {
+        auto new_filename = "copy_"s + file_path.filename().string();
+        file_path = file_path.parent_path() / new_filename;
+    }
+
     std::ofstream output(file_path);
 }
 
