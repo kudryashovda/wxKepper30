@@ -126,8 +126,28 @@ void wxLogic::LoadTree() {
     std::wstring line;
     std::getline(is, line); // pass root string
     // settings
-    auto settings = wxLogic::tokenizer(line, L"\t");
-    id_to_info_[root_id].comment = settings[3];
+    if (line.empty()) {
+        wxMessageBox("Database file is corrupted\n\nPlease add any item and restart application", "Error");
+        return;
+    }
+
+    const auto settings = wxLogic::tokenizer(line, L"\t");
+    constexpr int fields_count = 5;
+
+    if (settings.size() != fields_count) {
+        wxMessageBox("Database file is corrupted\n\nSettings error", "Error");
+        return;
+    }
+
+    constexpr int id_idx = 0;
+    constexpr int parent_id_idx = 1;
+    constexpr int name_idx = 2;
+    constexpr int comment_idx = 3;
+    constexpr int status_idx = 4;
+
+    constexpr int settings_idx = 3; // only for root
+
+    id_to_info_[root_id].comment = settings[settings_idx];
 
     while (std::getline(is, line)) {
         if (line.empty()) {
@@ -136,15 +156,19 @@ void wxLogic::LoadTree() {
 
         TreeItem ti;
 
-        auto tokens = wxLogic::tokenizer(line, L"\t");
+        const auto tokens = wxLogic::tokenizer(line, L"\t");
+        if (tokens.size() != fields_count) {
+            wxMessageBox("Database file is corrupted\n\nCheck database file on errors", "Error");
+            return;
+        }
 
-        ti.id = stoi(tokens[0]);
-        ti.parent_id = stoi(tokens[1]);
+        ti.id = stoi(tokens[id_idx]);
+        ti.parent_id = stoi(tokens[parent_id_idx]);
 
-        ti.name = tokens[2];
-        ti.comment = tokens[3];
+        ti.name = tokens[name_idx];
+        ti.comment = tokens[comment_idx];
 
-        wxString raw_status = tokens[4];
+        wxString raw_status = tokens[status_idx];
         ti.status = ItemStatus::Normal;
         if (raw_status == "A") {
             ti.status = ItemStatus::Archived;
