@@ -43,7 +43,6 @@ public:
     const TreeItem& GetTreeItemInfo(long item_id);
     void SaveTree();
     void LoadTree();
-    static std::vector<std::wstring> tokenizer(std::wstring str, const std::wstring& delim);
 
     wxTreeItemId GetParentTreeItemPtrById(long item_id);
     wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, long item_id);
@@ -54,7 +53,6 @@ public:
     void CopyFiles(wxTreeItemId item_ptr, const std::vector<fs::path>& paths);
     fs::path GetItemPath(const TreeItem& info);
     fs::path GetItemPath(wxTreeItemId item_ptr);
-    static bool IsValidFilename(const std::wstring& filename);
 
 private:
     const fs::path workdir_ = fs::current_path();

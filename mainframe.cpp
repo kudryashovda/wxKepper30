@@ -361,7 +361,7 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
     const auto filename = dlg.GetValue();
 
-    if (filename.empty() || !wxLogic::IsValidFilename(filename.ToStdWstring())) {
+    if (filename.empty() || !utils::IsValidFilename(filename.ToStdWstring())) {
         wxMessageBox("Invalid filename", "Warning");
         return;
     }
