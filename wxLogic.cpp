@@ -84,7 +84,7 @@ void wxLogic::SaveTree() {
         } else if (item.status == ItemStatus::Archived) {
             status = 'A';
         };
-       
+
         os << id << '\t' << item.parent_id << '\t' << item.name << '\t' << item.comment << '\t' << status << '\n';
     }
 }
