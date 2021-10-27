@@ -131,7 +131,7 @@ void wxLogic::LoadTree() {
         return;
     }
 
-    const auto settings = wxLogic::tokenizer(line, L"\t");
+    const auto settings = utils::tokenizer(line, L"\t");
     constexpr int fields_count = 5;
 
     if (settings.size() != fields_count) {
@@ -156,7 +156,7 @@ void wxLogic::LoadTree() {
 
         TreeItem ti;
 
-        const auto tokens = wxLogic::tokenizer(line, L"\t");
+        const auto tokens = utils::tokenizer(line, L"\t");
         if (tokens.size() != fields_count) {
             wxMessageBox("Database file is corrupted\n\nCheck database file on errors", "Error");
             return;
@@ -233,21 +233,6 @@ wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString&
     wxitem_to_id_[new_item_ptr] = item_id;
 
     return new_item_ptr;
-}
-
-vector<wstring> wxLogic::tokenizer(wstring str, const wstring& delim) {
-    vector<wstring> vs;
-
-    size_t pos;
-    wstring token;
-    do {
-        pos = str.find_first_of(delim);
-        token = str.substr(0, pos);
-        vs.push_back(token);
-        str = str.substr(pos + 1);
-    } while (pos != wstring::npos);
-
-    return vs;
 }
 
 bool wxLogic::ItemHasChild(wxTreeItemId item_ptr) {
@@ -327,24 +312,6 @@ fs::path wxLogic::GetItemPath(const TreeItem& info) {
 
 fs::path wxLogic::GetItemPath(wxTreeItemId item_ptr) {
     return GetItemPath(GetTreeItemInfo(item_ptr));
-}
-
-bool wxLogic::IsValidFilename(const std::wstring& filename) {
-
-    const unordered_set<wstring> illegal_names = { L"NUL", L"CON", L"PRN", L"AUX", L"COM0", L"COM1", L"COM2", L"COM3", L"COM4", L"COM5", L"COM6", L"COM7", L"COM8", L"COM9", L"LPT0", L"LPT1", L"LPT2", L"LPT3", L"LPT4", L"LPT5", L"LPT6", L"LPT7", L"LPT8", L"LPT9" };
-    if (illegal_names.find(filename) != illegal_names.end()) {
-        return false;
-    }
-
-    const wstring illegal_chars = L"\\/:?\"<>|$";
-
-    for (wchar_t ch : filename) {
-        if (illegal_chars.find(ch) != wstring::npos) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 void wxLogic::CopyFiles(wxTreeItemId item_ptr, const vector<fs::path>& paths) {

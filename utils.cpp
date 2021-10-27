@@ -4,6 +4,21 @@ using namespace std;
 
 namespace utils {
 
+vector<wstring> tokenizer(wstring str, const wstring& delim) {
+    vector<wstring> vs;
+
+    size_t pos;
+    wstring token;
+    do {
+        pos = str.find_first_of(delim);
+        token = str.substr(0, pos);
+        vs.push_back(token);
+        str = str.substr(pos + 1);
+    } while (pos != wstring::npos);
+
+    return vs;
+}
+
 wstring TransformToSpecialChars(const wstring& text) {
 
     wstring str;
@@ -67,6 +82,24 @@ wstring ScreenSpecialChars(const wstring& value) {
     }
 
     return out;
+}
+
+bool IsValidFilename(const std::wstring& filename) {
+
+    const unordered_set<wstring> illegal_names = { L"NUL", L"CON", L"PRN", L"AUX", L"COM0", L"COM1", L"COM2", L"COM3", L"COM4", L"COM5", L"COM6", L"COM7", L"COM8", L"COM9", L"LPT0", L"LPT1", L"LPT2", L"LPT3", L"LPT4", L"LPT5", L"LPT6", L"LPT7", L"LPT8", L"LPT9" };
+    if (illegal_names.find(filename) != illegal_names.end()) {
+        return false;
+    }
+
+    const wstring illegal_chars = L"\\/:?\"<>|$";
+
+    for (wchar_t ch : filename) {
+        if (illegal_chars.find(ch) != wstring::npos) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 } // namespace utils
