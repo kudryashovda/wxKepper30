@@ -54,11 +54,11 @@ public:
     void CopyFiles(wxTreeItemId item_ptr, const std::vector<fs::path>& paths);
     fs::path GetItemPath(const TreeItem& info);
     fs::path GetItemPath(wxTreeItemId item_ptr);
-    static bool IsValidFilename(const std::string& filename);
+    static bool IsValidFilename(const std::wstring& filename);
 
 private:
     const fs::path workdir_ = fs::current_path();
-    const fs::path db_path_ = workdir_ / "data" / "db.dat";
+    const fs::path db_path_ = workdir_ / L"data" / L"db.dat";
     const fs::path db_workdir_ = db_path_.parent_path();
     const fs::path files_workdir_ = db_path_.parent_path();
 

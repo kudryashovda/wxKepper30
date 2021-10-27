@@ -207,7 +207,7 @@ void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {
 }
 
 void MainFrame::ShowCard(const TreeItem& info) {
-    edtId->SetValue(std::to_string(info.id));
+    edtId->SetValue(std::to_wstring(info.id));
     edtName->SetValue(info.name);
     tc->SetValue(info.comment);
 
@@ -361,7 +361,7 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
     const auto filename = dlg.GetValue();
 
-    if (filename.empty() || !wxLogic::IsValidFilename(filename.ToStdString())) {
+    if (filename.empty() || !wxLogic::IsValidFilename(filename.ToStdWstring())) {
         wxMessageBox("Invalid filename", "Warning");
         return;
     }
@@ -373,7 +373,7 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
 
 fs::path MainFrame::GetFilenameFromListbox(wxTreeItemId selected_item, int item_idx) {
     wxString filename = listBox->GetString(item_idx);
-    return logic_.GetItemPath(selected_item) / filename.ToStdString();
+    return logic_.GetItemPath(selected_item) / filename.ToStdWstring();
 }
 
 void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
@@ -389,7 +389,7 @@ void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
     }
 
     /* To enable open files and folder with non-latin chars add wxSetlocale(LC_ALL, "") to to Init foo */
-    wxLaunchDefaultApplication(path.wstring());
+    wxLaunchDefaultApplication(L"\"" + path.wstring() + L"\"");
 }
 
 void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
@@ -443,7 +443,7 @@ void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
 
     vector<fs::path> paths;
     for (const auto& path : sourceFileNames) {
-        paths.emplace_back(path.ToStdString());
+        paths.emplace_back(path.ToStdWstring());
     }
 
     logic_.CopyFiles(item, paths);

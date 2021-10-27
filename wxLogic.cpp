@@ -7,7 +7,7 @@ void wxLogic::SetTree(wxTreeCtrl* treeCtrl) {
 }
 
 wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString& name, const wxString& comment) {
-    if (target == nullptr) {
+    if (!target) {
         return nullptr;
     }
 
@@ -81,7 +81,7 @@ void wxLogic::SaveTree() {
         item.comment.ToUTF8();
         item.comment = utils::ScreenSpecialChars(item.comment.ToStdWstring());
 
-        char status = 'U';
+        wchar_t status = 'U';
         if (item.status == ItemStatus::Normal) {
             status = 'N';
         } else if (item.status == ItemStatus::Archived) {
@@ -163,18 +163,18 @@ void wxLogic::LoadTree() {
         auto item_id = ids_.at(i);
         auto item_info = id_to_info_.at(item_id);
 
-        if (item_info.wxitem != nullptr || item_info.status == ItemStatus::Archived) {
+        if (item_info.wxitem || item_info.status == ItemStatus::Archived) {
             continue;
         }
 
         auto parent_item_ptr = GetParentTreeItemPtrById(item_id);
 
-        if (parent_item_ptr != nullptr) {
+        if (parent_item_ptr) {
             CreateNewTreeItem(parent_item_ptr, item_info.name, item_id);
         } else {
             long j = i;
 
-            while (parent_item_ptr == nullptr && (j + 1) < ids_.size()) {
+            while (!parent_item_ptr && (j + 1) < ids_.size()) {
                 ++j;
                 if (id_to_info_.at(ids_.at(j)).wxitem == nullptr) {
                     parent_item_ptr = GetParentTreeItemPtrById(ids_.at(j));
@@ -227,7 +227,7 @@ vector<wstring> wxLogic::tokenizer(wstring str, const wstring& delim) {
 }
 
 bool wxLogic::ItemHasChild(wxTreeItemId item_ptr) {
-    if (item_ptr == nullptr) {
+    if (!item_ptr) {
         return false;
     }
 
@@ -298,24 +298,24 @@ void wxLogic::CreateFile(wxTreeItemId item_ptr, const wstring& filename) {
 }
 
 fs::path wxLogic::GetItemPath(const TreeItem& info) {
-    return files_workdir_ / std::to_string(info.id);
+    return files_workdir_ / std::to_wstring(info.id);
 }
 
 fs::path wxLogic::GetItemPath(wxTreeItemId item_ptr) {
     return GetItemPath(GetTreeItemInfo(item_ptr));
 }
 
-bool wxLogic::IsValidFilename(const std::string& filename) {
+bool wxLogic::IsValidFilename(const std::wstring& filename) {
 
-    const unordered_set<string> illegal_names = { "NUL", "CON", "PRN", "AUX", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+    const unordered_set<wstring> illegal_names = { L"NUL", L"CON", L"PRN", L"AUX", L"COM0", L"COM1", L"COM2", L"COM3", L"COM4", L"COM5", L"COM6", L"COM7", L"COM8", L"COM9", L"LPT0", L"LPT1", L"LPT2", L"LPT3", L"LPT4", L"LPT5", L"LPT6", L"LPT7", L"LPT8", L"LPT9" };
     if (illegal_names.find(filename) != illegal_names.end()) {
         return false;
     }
 
-    const string illegal_chars = "\\/:?\"<>|$";
+    const wstring illegal_chars = L"\\/:?\"<>|$";
 
-    for (char ch : filename) {
-        if (illegal_chars.find(ch) != string::npos) {
+    for (wchar_t ch : filename) {
+        if (illegal_chars.find(ch) != wstring::npos) {
             return false;
         }
     }
@@ -330,7 +330,7 @@ void wxLogic::CopyFiles(wxTreeItemId item_ptr, const vector<fs::path>& paths) {
 
     const long item_id = wxitem_to_id_.at(item_ptr);
 
-    auto files_dir = files_workdir_ / to_string(item_id);
+    auto files_dir = files_workdir_ / to_wstring(item_id);
     if (!fs::exists(files_dir)) {
         fs::create_directories(files_dir);
     }
@@ -339,7 +339,7 @@ void wxLogic::CopyFiles(wxTreeItemId item_ptr, const vector<fs::path>& paths) {
         auto dest_path = files_dir / path.filename();
 
         while (fs::exists(dest_path)) {
-            auto new_filename = "copy_"s + dest_path.filename().string();
+            auto new_filename = L"copy_" + dest_path.filename().wstring();
             dest_path = dest_path.parent_path() / new_filename;
         }
 
