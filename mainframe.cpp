@@ -166,18 +166,6 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
 
     borderSizer->Fit(this);
 
-    wxSize ws = this->GetSize();
-    ws.SetHeight(ws.GetHeight() * 2);
-    ws.SetWidth(ws.GetWidth() * 2);
-
-#if defined(__WINDOWS__)
-    this->SetMinClientSize(ws);
-#else
-    SetMinSize(ws); // linux
-#endif
-
-    SetClientSize(ws); // ClientToWindowSize(ws));
-
     dlgEdtText->SetFocus();
     dlgEdtText->SelectAll();
 }
@@ -252,6 +240,10 @@ void MainFrame::AppendItems(const wxArrayTreeItemIds& selected_items, long count
     }
 
     DlgAppendItem dlg(this, wxID_ANY, "Add object", this->style_);
+    const auto dlg_size = wxSize(600, 600);
+    dlg.SetMinSize(dlg_size);
+    dlg.SetSize(dlg_size);
+
     if (dlg.ShowModal() == wxID_CANCEL)
         return;
 

@@ -11,9 +11,12 @@ bool MyApp::OnInit() {
 
     wxLogic logic;
 
-    wxString title("Keeper");
+    const wxString title("Keeper");
     auto* frame = new MainFrame(title, logic);
-    frame->SetMinSize(wxSize(800, 800));
+    const auto window_size = wxSize(800, 800);
+    frame->SetMinSize(window_size);
+    frame->SetSize(window_size);
+
     frame->Show(true);
 
     return true;
