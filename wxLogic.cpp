@@ -78,15 +78,14 @@ void wxLogic::SaveTree() {
         item.comment.ToUTF8();
         item.comment = utils::ScreenSpecialChars(item.comment.ToStdString());
 
-        wxChar status = 'U';
+        char status = 'U';
         if (item.status == ItemStatus::Normal) {
             status = 'N';
         } else if (item.status == ItemStatus::Archived) {
             status = 'A';
         };
 
-        wxString line = wxString::Format(wxT("%d\t%d\t%s\t%s\t%c"), id, item.parent_id, item.name, item.comment, status);
-        os << line << '\n';
+        os << id << '\t' << item.parent_id << '\t' << item.name << '\t' << item.comment << '\t' << status << '\n';
     }
 }
 
