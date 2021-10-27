@@ -12,6 +12,7 @@
 #include <wx/numdlg.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
+#include <codecvt>
 
 #include "utils.h"
 
@@ -42,13 +43,14 @@ public:
     const TreeItem& GetTreeItemInfo(long item_id);
     void SaveTree();
     void LoadTree();
-    static wxVector<wxString> tokenizer(wxString str, const wxString& delim);
+    static std::vector<std::wstring> tokenizer(std::wstring str, const std::wstring& delim);
+
     wxTreeItemId GetParentTreeItemPtrById(long item_id);
     wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, long item_id);
     int DeleteItem(wxTreeItemId item_ptr);
     bool ItemHasChild(wxTreeItemId item_ptr);
     bool IsItemIdExists(long item_id);
-    void CreateFile(wxTreeItemId item_ptr, const std::string& filename);
+    void CreateFile(wxTreeItemId item_ptr, const std::wstring& filename);
     void CopyFiles(wxTreeItemId item_ptr, const std::vector<fs::path>& paths);
     fs::path GetItemPath(const TreeItem& info);
     fs::path GetItemPath(wxTreeItemId item_ptr);

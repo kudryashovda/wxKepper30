@@ -67,16 +67,19 @@ void wxLogic::SaveTree() {
         fs::create_directories(db_workdir_);
     }
 
-    std::ofstream os(db_path_);
+    std::wofstream os(db_path_);
+
+    std::locale utf8_locale(std::locale(), new std::codecvt_utf8<wchar_t>);
+    os.imbue(utf8_locale);
 
     for (auto id : ids_) {
         TreeItem item = id_to_info_.at(id); // not ref
 
         item.name.ToUTF8();
-        item.name = utils::ScreenSpecialChars(item.name.ToStdString());
+        item.name = utils::ScreenSpecialChars(item.name.ToStdWstring());
 
         item.comment.ToUTF8();
-        item.comment = utils::ScreenSpecialChars(item.comment.ToStdString());
+        item.comment = utils::ScreenSpecialChars(item.comment.ToStdWstring());
 
         char status = 'U';
         if (item.status == ItemStatus::Normal) {
@@ -84,7 +87,6 @@ void wxLogic::SaveTree() {
         } else if (item.status == ItemStatus::Archived) {
             status = 'A';
         };
-
         os << id << '\t' << item.parent_id << '\t' << item.name << '\t' << item.comment << '\t' << status << '\n';
     }
 }
@@ -117,11 +119,14 @@ void wxLogic::LoadTree() {
         return;
     }
 
-    std::ifstream is(db_path_);
-    std::string line;
+    std::wifstream is(db_path_);
+    std::locale utf8_locale(std::locale(), new std::codecvt_utf8<wchar_t>);
+    is.imbue(utf8_locale);
+
+    std::wstring line;
     std::getline(is, line); // pass root string
     // settings
-    auto settings = wxLogic::tokenizer(line, "\t");
+    auto settings = wxLogic::tokenizer(line, L"\t");
     id_to_info_[root_id].comment = settings[3];
 
     while (std::getline(is, line)) {
@@ -131,10 +136,10 @@ void wxLogic::LoadTree() {
 
         TreeItem ti;
 
-        auto tokens = wxLogic::tokenizer(line, "\t");
+        auto tokens = wxLogic::tokenizer(line, L"\t");
 
-        ti.id = wxAtoi(tokens[0]);
-        ti.parent_id = wxAtoi(tokens[1]);
+        ti.id = stoi(tokens[0]);
+        ti.parent_id = stoi(tokens[1]);
 
         ti.name = tokens[2];
         ti.comment = tokens[3];
@@ -146,8 +151,8 @@ void wxLogic::LoadTree() {
         }
 
         // Remove screen slashes
-        ti.name = utils::TransformToSpecialChars(ti.name.ToStdString());
-        ti.comment = utils::TransformToSpecialChars(ti.comment.ToStdString());
+        ti.name = utils::TransformToSpecialChars(ti.name.ToStdWstring());
+        ti.comment = utils::TransformToSpecialChars(ti.comment.ToStdWstring());
 
         ids_.push_back(ti.id);
         id_to_info_[ti.id] = ti;
@@ -206,17 +211,17 @@ wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString&
     return new_item_ptr;
 }
 
-wxVector<wxString> wxLogic::tokenizer(wxString str, const wxString& delim) {
-    wxVector<wxString> vs;
+vector<wstring> wxLogic::tokenizer(wstring str, const wstring& delim) {
+    vector<wstring> vs;
 
     size_t pos;
-    wxString token;
+    wstring token;
     do {
         pos = str.find_first_of(delim);
         token = str.substr(0, pos);
         vs.push_back(token);
         str = str.substr(pos + 1);
-    } while (pos != wxString::npos);
+    } while (pos != wstring::npos);
 
     return vs;
 }
@@ -272,7 +277,7 @@ bool wxLogic::IsItemIdExists(long item_id) {
     return false;
 }
 
-void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
+void wxLogic::CreateFile(wxTreeItemId item_ptr, const wstring& filename) {
     if (!item_ptr) {
         return;
     }
@@ -285,7 +290,7 @@ void wxLogic::CreateFile(wxTreeItemId item_ptr, const string& filename) {
     }
 
     while (fs::exists(file_path)) {
-        auto new_filename = "copy_"s + file_path.filename().string();
+        wstring new_filename = L"copy_" + file_path.filename().wstring();
         file_path = file_path.parent_path() / new_filename;
     }
 
