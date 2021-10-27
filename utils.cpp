@@ -4,12 +4,12 @@ using namespace std;
 
 namespace utils {
 
-string TransformToSpecialChars(const string& text) {
+wstring TransformToSpecialChars(const wstring& text) {
 
-    std::string str;
+    wstring str;
 
     for (int i = 0; i < text.size(); ++i) {
-        const char current_char = text[i];
+        const wchar_t current_char = text[i];
 
         if (current_char == '\\') {
             ++i;
@@ -42,23 +42,23 @@ string TransformToSpecialChars(const string& text) {
     return str;
 }
 
-string ScreenSpecialChars(const std::string& value) {
+wstring ScreenSpecialChars(const wstring& value) {
 
-    string out;
+    wstring out;
 
-    for (const char current_char : value) {
+    for (const wchar_t current_char : value) {
         switch (current_char) {
         case '\t':
-            out.append("\\t"s);
+            out.append(L"\\t");
             break;
         case '\r':
-            out.append("\\r"s);
+            out.append(L"\\r");
             break;
         case '\n':
-            out.append("\\n"s);
+            out.append(L"\\n");
             break;
         case '\\':
-            out.append(R"(\\)");
+            out.append(L"\\\\"s);
             break;
         default:
             out.push_back(current_char);

@@ -5,7 +5,7 @@
 
 namespace utils {
 
-std::string TransformToSpecialChars(const std::string& text);
-std::string ScreenSpecialChars(const std::string& value);
+std::wstring TransformToSpecialChars(const std::wstring& text);
+std::wstring ScreenSpecialChars(const std::wstring& value);
 
 } // namespace utils

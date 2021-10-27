@@ -374,7 +374,7 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
         return;
     }
 
-    logic_.CreateFile(selected_item, filename.ToStdString());
+    logic_.CreateFile(selected_item, filename.ToStdWstring());
 
     UpdateFileBox(listBox);
 }
@@ -397,7 +397,7 @@ void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
     }
 
     /* To enable open files and folder with non-latin chars add wxSetlocale(LC_ALL, "") to to Init foo */
-    wxLaunchDefaultApplication(path.string());
+    wxLaunchDefaultApplication(path.wstring());
 }
 
 void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
