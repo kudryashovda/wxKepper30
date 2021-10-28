@@ -288,6 +288,7 @@ void MainFrame::onTreeItemClick(wxCommandEvent& event) {
     if (selected_item == treeCtrl->GetRootItem()) {
         tc->Clear();
         edtName->Clear();
+        listBox->Clear();
 
         return;
     }
