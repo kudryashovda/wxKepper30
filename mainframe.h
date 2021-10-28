@@ -27,7 +27,7 @@ private:
     wxListBox* listBox;
 
     void BindEvents();
-    fs::path GetFilenameFromListbox(wxTreeItemId selected_item, int item_idx);
+    fs::path GetFilenameFromListbox(wxTreeItemId selected_item, wxListBox* lbox);
 
 public:
     void OnBtnAddClick(wxCommandEvent& event);
