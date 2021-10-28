@@ -372,8 +372,19 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
     UpdateFileBox(listBox);
 }
 
-fs::path MainFrame::GetFilenameFromListbox(wxTreeItemId selected_item, int item_idx) {
-    wxString filename = listBox->GetString(item_idx);
+fs::path MainFrame::GetFilenameFromListbox(wxTreeItemId selected_item, wxListBox* lbox) {
+    fs::path empty;
+
+    if (!selected_item.IsOk() || listBox->IsEmpty()) {
+        return empty;
+    }
+
+    const int selected_file_idx = lbox->GetSelection();
+    if (selected_file_idx == -1) {
+        return empty;
+    }
+
+    const wxString filename = lbox->GetString(selected_file_idx);
     return logic_.GetItemPath(selected_item) / filename.ToStdWstring();
 }
 
@@ -383,8 +394,8 @@ void MainFrame::onBoxItemDblClick(wxCommandEvent& event) {
         return;
     }
 
-    const auto path = GetFilenameFromListbox(selected_item, event.GetSelection());
-    if (!exists(path)) {
+    const auto path = GetFilenameFromListbox(selected_item, listBox);
+    if (path.empty() || !exists(path)) {
         wxMessageBox("No files found on disk", "Warning");
         return;
     }
@@ -399,13 +410,8 @@ void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
         return;
     }
 
-    int selected_file_idx = listBox->GetSelection();
-    if (selected_file_idx == -1) {
-        return;
-    }
-
-    const auto path = GetFilenameFromListbox(selected_item, selected_file_idx);
-    if (!exists(path)) {
+    const auto path = GetFilenameFromListbox(selected_item, listBox);
+    if (path.empty() || !exists(path)) {
         wxMessageBox("No files found on disk", "Warning");
         return;
     }
@@ -454,17 +460,12 @@ void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
 
 void MainFrame::onPressbtnRenameFile(wxCommandEvent& event) {
     const auto selected_item = treeCtrl->GetFocusedItem();
-    if (!selected_item.IsOk() || listBox->IsEmpty()) {
+    if (!selected_item.IsOk()) {
         return;
     }
 
-    const int selected_file_idx = listBox->GetSelection();
-    if (selected_file_idx == -1) {
-        return;
-    }
-
-    const auto path = GetFilenameFromListbox(selected_item, selected_file_idx);
-    if (!exists(path)) {
+    const auto path = GetFilenameFromListbox(selected_item, listBox);
+    if (path.empty() || !exists(path)) {
         wxMessageBox("No files found on disk", "Warning");
         return;
     }
