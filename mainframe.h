@@ -43,6 +43,7 @@ public:
     void onPressbtnaddObjectsToItem(wxCommandEvent& event);
     void onBoxItemDblClick(wxCommandEvent& event);
     void onPressbtnDelFile(wxCommandEvent& event);
+    void onPressbtnRenameFile(wxCommandEvent& event);
 
     void ShowCard(const TreeItem& info);
     void AppendItems(const wxArrayTreeItemIds& selected_items, long count);

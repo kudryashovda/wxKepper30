@@ -182,7 +182,7 @@ void MainFrame::BindEvents() {
     btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
     btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnaddObjectsToItem, this);
     btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
-    //    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
+    btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
     //    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
     //    btnLink->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressBtnLink, this);
 }
@@ -448,6 +448,43 @@ void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
     }
 
     logic_.CopyFiles(item, paths);
+
+    UpdateFileBox(listBox);
+}
+
+void MainFrame::onPressbtnRenameFile(wxCommandEvent& event) {
+    const auto selected_item = treeCtrl->GetFocusedItem();
+    if (!selected_item.IsOk() || listBox->IsEmpty()) {
+        return;
+    }
+
+    const int selected_file_idx = listBox->GetSelection();
+    if (selected_file_idx == -1) {
+        return;
+    }
+
+    const auto path = GetFilenameFromListbox(selected_item, selected_file_idx);
+    if (!exists(path)) {
+        wxMessageBox("No files found on disk", "Warning");
+        return;
+    }
+
+    wxTextEntryDialog dlg(this, "Enter new name", "Rename", path.filename().wstring());
+    if (dlg.ShowModal() != wxID_OK) {
+        return;
+    }
+
+    const wstring new_name = dlg.GetValue().ToStdWstring();
+    if (new_name.empty()) {
+        return;
+    }
+
+    if (!utils::IsValidFilename(new_name)) {
+        wxMessageBox("Incorrect filename", "Warning");
+        return;
+    }
+
+    fs::rename(path, path.parent_path() / new_name);
 
     UpdateFileBox(listBox);
 }

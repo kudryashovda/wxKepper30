@@ -86,6 +86,22 @@ wstring ScreenSpecialChars(const wstring& value) {
 
 bool IsValidFilename(const std::wstring& filename) {
 
+    if (filename.empty() || all_of(filename.begin(), filename.end(), [](wchar_t ch) { return ch == ' '; })) {
+        return false;
+    }
+
+    bool space_is_found = false;
+    for (int i = filename.size() - 1; i >= 0; --i) {
+
+        if (filename[i] == ' ') {
+            space_is_found = true;
+        } else if (space_is_found && filename[i] == '.') {
+            return false;
+        } else {
+            space_is_found = false;
+        }
+    }
+
     const unordered_set<wstring> illegal_names = { L"NUL", L"CON", L"PRN", L"AUX", L"COM0", L"COM1", L"COM2", L"COM3", L"COM4", L"COM5", L"COM6", L"COM7", L"COM8", L"COM9", L"LPT0", L"LPT1", L"LPT2", L"LPT3", L"LPT4", L"LPT5", L"LPT6", L"LPT7", L"LPT8", L"LPT9" };
     if (illegal_names.find(filename) != illegal_names.end()) {
         return false;
