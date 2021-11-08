@@ -13,11 +13,12 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
 
     auto target_item_id = wxitem_to_id_.at(target);
 
-    long new_item_id;
+    // place to insert getProps
+    const auto& props = id_to_info_.at(0).comment;
 
-    if (!id_to_info_.at(0).comment.ToLong(&new_item_id)) {
-        new_item_id = 1;
-    }
+    long new_item_id = 1;
+    wstringstream wss(props);
+    wss >> new_item_id;
 
     ids_.push_back(new_item_id);
 
@@ -30,7 +31,7 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
 
     // To internal storage config
     id_to_info_[0].comment.clear();
-    id_to_info_[0].comment << (new_item_id + 1);
+    id_to_info_[0].comment = to_wstring(new_item_id + 1);
 
     this->SaveTree();
 
@@ -75,11 +76,8 @@ void wxLogic::SaveTree() {
     for (auto id : ids_) {
         TreeItem item = id_to_info_.at(id); // not ref
 
-        item.name.ToUTF8();
-        item.name = utils::ScreenSpecialChars(item.name.ToStdWstring());
-
-        item.comment.ToUTF8();
-        item.comment = utils::ScreenSpecialChars(item.comment.ToStdWstring());
+        item.name = utils::ScreenSpecialChars(item.name);
+        item.comment = utils::ScreenSpecialChars(item.comment);
 
         wchar_t status = 'U';
         if (item.status == ItemStatus::Normal) {
@@ -110,7 +108,7 @@ void wxLogic::LoadTree() {
 
     int root_id = 0;
     ids_.push_back(root_id);
-    id_to_info_[root_id] = { root_id, 0, root_item_ptr, "Root", "", ItemStatus::Normal };
+    id_to_info_[root_id] = { root_id, 0, root_item_ptr, L"Root", L"", ItemStatus::Normal };
     wxitem_to_id_[root_item_ptr] = root_id;
 
     wxVector<TreeItem> vs;
@@ -175,8 +173,8 @@ void wxLogic::LoadTree() {
         }
 
         // Remove screen slashes
-        ti.name = utils::TransformToSpecialChars(ti.name.ToStdWstring());
-        ti.comment = utils::TransformToSpecialChars(ti.comment.ToStdWstring());
+        ti.name = utils::TransformToSpecialChars(ti.name);
+        ti.comment = utils::TransformToSpecialChars(ti.comment);
 
         ids_.push_back(ti.id);
         id_to_info_[ti.id] = ti;
