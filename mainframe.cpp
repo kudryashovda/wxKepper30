@@ -173,6 +173,8 @@ DlgAppendItem::DlgAppendItem(wxWindow* parent, wxWindowID id, const wxString& ti
 void MainFrame::BindEvents() {
     btnAdd->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::OnBtnAddClick, this);
     treeCtrl->Bind(wxEVT_TREE_SEL_CHANGED, &MainFrame::onTreeItemClick, this);
+    treeCtrl->Bind(wxEVT_TREE_ITEM_MENU, &MainFrame::onTreeItemRightClick, this);
+
     btnDel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDel, this);
     btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
     btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
@@ -488,4 +490,34 @@ void MainFrame::onPressbtnRenameFile(wxCommandEvent& event) {
     fs::rename(path, path.parent_path() / new_name);
 
     UpdateFileBox(listBox);
+}
+
+void MainFrame::onTreeItemRightClick(wxTreeEvent& evt) {
+    wxMenu mnu;
+    mnu.Append(ID_ADD_ITEM, "Add new item");
+    mnu.Append(ID_DUBLICATE_ITEM, "Dublicate item");
+    mnu.Append(ID_CUT_ITEM, "Cut item...");
+    mnu.Append(ID_DELETE_ITEM, "Delete item...");
+    mnu.Append(ID_RENAME_ITEM, "Rename item...");
+    mnu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MainFrame::onPopupClick), NULL, this);
+    PopupMenu(&mnu);
+}
+
+void MainFrame::onPopupClick(wxCommandEvent& evt) {
+    wxTreeItemId item = treeCtrl->GetFocusedItem();
+
+    switch (evt.GetId()) {
+    case ID_ADD_ITEM:
+        // appendNewItem(item);
+        break;
+    case ID_DUBLICATE_ITEM:
+        // dublicate();
+        break;
+    case ID_DELETE_ITEM:
+        // deleteItems();
+        break;
+    case ID_RENAME_ITEM:
+        // renameItem(item);
+        break;
+    }
 }
