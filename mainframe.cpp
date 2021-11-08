@@ -360,14 +360,14 @@ void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
         return;
     }
 
-    const auto filename = dlg.GetValue();
+    const wstring filename = dlg.GetValue().ToStdWstring();
 
-    if (filename.empty() || !utils::IsValidFilename(filename.ToStdWstring())) {
+    if (filename.empty() || !utils::IsValidFilename(filename)) {
         wxMessageBox("Invalid filename", "Warning");
         return;
     }
 
-    logic_.CreateFile(selected_item, filename.ToStdWstring());
+    logic_.CreateFile(selected_item, filename);
 
     UpdateFileBox(listBox);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <sstream>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
@@ -28,8 +29,8 @@ struct TreeItem {
     long id;
     long parent_id;
     wxTreeItemId wxitem;
-    wxString name;
-    wxString comment;
+    std::wstring name;
+    std::wstring comment;
     ItemStatus status;
 };
 
