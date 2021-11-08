@@ -10,8 +10,7 @@
 #define ID_ADD_ITEM 2001
 #define ID_CUT_ITEM 2002
 #define ID_DELETE_ITEM 2003
-#define ID_RENAME_ITEM 2004
-#define ID_DUBLICATE_ITEM 2005
+#define ID_DUBLICATE_ITEM 2004
 /* elements in popup menu */
 
 class MainFrame : public wxFrame {
@@ -57,6 +56,8 @@ public:
     void onPopupClick(wxCommandEvent& evt);
 
     void ShowCard(const TreeItem& info);
+    void DeleteItem(wxTreeItemId item);
+    void CutItems(const wxArrayTreeItemIds& selected_items);
     void AppendItems(const wxArrayTreeItemIds& selected_items, long count);
     void expandAllParents(wxTreeItemId item);
     void UpdateFileBox(wxListBox* lbox);
