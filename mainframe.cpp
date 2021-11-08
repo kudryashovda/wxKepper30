@@ -275,6 +275,10 @@ void MainFrame::onPressbtnCut(wxCommandEvent& event) {
     wxArrayTreeItemIds selected_items;
     treeCtrl->GetSelections(selected_items);
 
+    CutItems(selected_items);
+}
+
+void MainFrame::CutItems(const wxArrayTreeItemIds& selected_items) {
     wxNumberEntryDialog dlgCut(this, "Cut the sample into", "Number of samples", "Cut", 1, 0, 100);
     if (dlgCut.ShowModal() != wxID_OK) {
         return;
@@ -301,6 +305,11 @@ void MainFrame::onTreeItemClick(wxCommandEvent& event) {
 }
 
 void MainFrame::onPressbtnDel(wxCommandEvent& event) {
+    auto selected_item = treeCtrl->GetFocusedItem();
+    DeleteItem(selected_item);
+}
+
+void MainFrame::DeleteItem(wxTreeItemId item) {
 
     auto* dlgItem = new wxMessageDialog(
         nullptr, wxT("Are you sure to delete item?"), wxT("Question"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
@@ -310,16 +319,14 @@ void MainFrame::onPressbtnDel(wxCommandEvent& event) {
     }
     dlgItem->Destroy();
 
-    auto selected_item = treeCtrl->GetFocusedItem();
-
-    if (!selected_item) {
+    if (!item) {
         return;
     }
 
-    auto status = logic_.DeleteItem(selected_item);
+    auto status = logic_.DeleteItem(item);
 
     if (status == 0) {
-        treeCtrl->Delete(selected_item);
+        treeCtrl->Delete(item);
     }
 }
 
@@ -498,26 +505,28 @@ void MainFrame::onTreeItemRightClick(wxTreeEvent& evt) {
     mnu.Append(ID_DUBLICATE_ITEM, "Dublicate item");
     mnu.Append(ID_CUT_ITEM, "Cut item...");
     mnu.Append(ID_DELETE_ITEM, "Delete item...");
-    mnu.Append(ID_RENAME_ITEM, "Rename item...");
     mnu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MainFrame::onPopupClick), NULL, this);
     PopupMenu(&mnu);
 }
 
 void MainFrame::onPopupClick(wxCommandEvent& evt) {
-    wxTreeItemId item = treeCtrl->GetFocusedItem();
+    wxTreeItemId selected_item = treeCtrl->GetFocusedItem();
+
+    wxArrayTreeItemIds selected_items;
+    treeCtrl->GetSelections(selected_items);
 
     switch (evt.GetId()) {
     case ID_ADD_ITEM:
-        // appendNewItem(item);
+        AppendItems(selected_items, 1);
+        break;
+    case ID_CUT_ITEM:
+        CutItems(selected_items);
         break;
     case ID_DUBLICATE_ITEM:
         // dublicate();
         break;
     case ID_DELETE_ITEM:
-        // deleteItems();
-        break;
-    case ID_RENAME_ITEM:
-        // renameItem(item);
+        DeleteItem(selected_item);
         break;
     }
 }
