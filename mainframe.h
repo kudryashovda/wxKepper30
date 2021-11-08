@@ -6,6 +6,14 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
+/* elements in popup menu */
+#define ID_ADD_ITEM 2001
+#define ID_CUT_ITEM 2002
+#define ID_DELETE_ITEM 2003
+#define ID_RENAME_ITEM 2004
+#define ID_DUBLICATE_ITEM 2005
+/* elements in popup menu */
+
 class MainFrame : public wxFrame {
 public:
     MainFrame(const wxString& title, wxLogic& logic);
@@ -32,6 +40,7 @@ private:
 public:
     void OnBtnAddClick(wxCommandEvent& event);
     void onTreeItemClick(wxCommandEvent& event);
+    void onTreeItemRightClick(wxTreeEvent& evt);
     // void onPressbtnExport(wxCommandEvent& event);
     // void onPressbtnImport(wxCommandEvent& event);
     void onPressbtnDel(wxCommandEvent& event);
@@ -44,6 +53,8 @@ public:
     void onBoxItemDblClick(wxCommandEvent& event);
     void onPressbtnDelFile(wxCommandEvent& event);
     void onPressbtnRenameFile(wxCommandEvent& event);
+
+    void onPopupClick(wxCommandEvent& evt);
 
     void ShowCard(const TreeItem& info);
     void AppendItems(const wxArrayTreeItemIds& selected_items, long count);
