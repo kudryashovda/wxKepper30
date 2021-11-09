@@ -183,11 +183,8 @@ void wxLogic::LoadTree() {
 
         auto parent_item_ptr = GetParentTreeItemPtrById(item_id);
 
-        const wxString empty_comment;
-        ItemStatus status = ItemStatus::Normal;
-
         if (parent_item_ptr) {
-            CreateNewTreeItem(parent_item_ptr, item_info.name, empty_comment, item_id, status);
+            CreateNewTreeItem(parent_item_ptr, item_info.name, item_info.comment, item_id, item_info.status);
         } else {
             long j = i;
 
@@ -209,7 +206,7 @@ void wxLogic::LoadTree() {
                 continue;
             }
 
-            CreateNewTreeItem(parent_item_ptr, current_name, empty_comment, item_id, status);
+            CreateNewTreeItem(parent_item_ptr, current_name, item_info.comment, item_id, item_info.status);
 
             --i; // step back
         }

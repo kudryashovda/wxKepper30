@@ -59,6 +59,7 @@ public:
     void DeleteItem(wxTreeItemId item);
     void CutItems(const wxArrayTreeItemIds& selected_items);
     void AppendItems(const wxArrayTreeItemIds& selected_items, long count);
+    void DuplicateItem(wxTreeItemId item);
     void expandAllParents(wxTreeItemId item);
     void UpdateFileBox(wxListBox* lbox);
 };
