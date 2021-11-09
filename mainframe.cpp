@@ -523,10 +523,21 @@ void MainFrame::onPopupClick(wxCommandEvent& evt) {
         CutItems(selected_items);
         break;
     case ID_DUBLICATE_ITEM:
-        // dublicate();
+        DuplicateItem(selected_item);
         break;
     case ID_DELETE_ITEM:
         DeleteItem(selected_item);
         break;
     }
+}
+
+void MainFrame::DuplicateItem(wxTreeItemId item) {
+    if (item == treeCtrl->GetRootItem()) {
+        return;
+    }
+
+    const auto& item_info = logic_.GetTreeItemInfo(item);
+    const auto parent_item = logic_.GetParentTreeItemPtrById(item_info.id);
+
+    logic_.AppendTreeItem(parent_item, item_info.name, item_info.comment);
 }
