@@ -11,8 +11,6 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
         return nullptr;
     }
 
-    auto target_item_id = wxitem_to_id_.at(target);
-
     // place to insert getProps
     const auto& props = id_to_info_.at(0).comment;
 
@@ -22,15 +20,9 @@ wxTreeItemId wxLogic::AppendTreeItem(const wxTreeItemId& target, const wxString&
 
     ids_.push_back(new_item_id);
 
-    auto new_item = CreateNewTreeItem(target, name, new_item_id);
+    auto new_item = CreateNewTreeItem(target, name, comment, new_item_id, ItemStatus::Normal);
 
-    id_to_info_[new_item_id].parent_id = target_item_id;
-    id_to_info_[new_item_id].name = name;
-    id_to_info_[new_item_id].comment = comment;
-    id_to_info_[new_item_id].status = ItemStatus::Normal;
-
-    // To internal storage config
-    id_to_info_[0].comment.clear();
+    // To internal storage config -> set_props(new_id)
     id_to_info_[0].comment = to_wstring(new_item_id + 1);
 
     this->SaveTree();
@@ -191,8 +183,11 @@ void wxLogic::LoadTree() {
 
         auto parent_item_ptr = GetParentTreeItemPtrById(item_id);
 
+        const wxString empty_comment;
+        ItemStatus status = ItemStatus::Normal;
+
         if (parent_item_ptr) {
-            CreateNewTreeItem(parent_item_ptr, item_info.name, item_id);
+            CreateNewTreeItem(parent_item_ptr, item_info.name, empty_comment, item_id, status);
         } else {
             long j = i;
 
@@ -214,7 +209,7 @@ void wxLogic::LoadTree() {
                 continue;
             }
 
-            CreateNewTreeItem(parent_item_ptr, current_name, item_id);
+            CreateNewTreeItem(parent_item_ptr, current_name, empty_comment, item_id, status);
 
             --i; // step back
         }
@@ -223,11 +218,16 @@ void wxLogic::LoadTree() {
     treeCtrl_->Expand(treeCtrl_->GetRootItem());
 }
 
-wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, long item_id) {
+wxTreeItemId wxLogic::CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, const wxString& comment, long item_id, ItemStatus status) {
     auto new_item_ptr = treeCtrl_->AppendItem(parent_ptr, name);
 
+    id_to_info_[item_id].parent_id = wxitem_to_id_.at(parent_ptr);
+    id_to_info_[item_id].name = name;
+    id_to_info_[item_id].comment = comment;
+    id_to_info_[item_id].status = status;
     id_to_info_[item_id].id = item_id;
     id_to_info_[item_id].wxitem = new_item_ptr;
+
     wxitem_to_id_[new_item_ptr] = item_id;
 
     return new_item_ptr;

@@ -46,7 +46,7 @@ public:
     void LoadTree();
 
     wxTreeItemId GetParentTreeItemPtrById(long item_id);
-    wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, long item_id);
+    wxTreeItemId CreateNewTreeItem(wxTreeItemId parent_ptr, const wxString& name, const wxString& comment, long item_id, ItemStatus status);
     int DeleteItem(wxTreeItemId item_ptr);
     bool ItemHasChild(wxTreeItemId item_ptr);
     bool IsItemIdExists(long item_id);
