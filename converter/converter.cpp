@@ -1,10 +1,10 @@
 #include <algorithm>
 #include <array>
+#include <codecvt>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <codecvt>
 
 using namespace std;
 
@@ -23,6 +23,15 @@ vector<wstring> tokenizer(wstring str, const wstring& delim) {
     return vs;
 }
 
+struct item {
+    int id;
+    int pid;
+    wstring marker;
+    int mid;
+    wstring name;
+    wstring comment;
+};
+
 int main() {
 
     wifstream file("data.txt"s);
@@ -35,6 +44,8 @@ int main() {
     if (!file) {
         return -1;
     }
+
+    vector<item> items;
 
     wstring line;
     while (getline(file, line)) {
@@ -59,7 +70,18 @@ int main() {
             new_comment.push_back(comment.back());
         }
 
-        ofs << tokens[0] << '\t' << tokens[1] << '\t' << tokens[4] << '\t' << new_comment << '\t' << 'N' << '\n';
+        tokens[5] = new_comment;
+
+        items.push_back({ stoi(tokens[0]), stoi(tokens[1]), tokens[2], stoi(tokens[3]), tokens[4], tokens[5] });
+    }
+
+    for (int i = 0; i < items.size(); ++i) {
+        if (items[i].marker == L"KDA") {
+            items[i].id = items[i].mid;
+            items[i].pid = items[items[i].pid].id;
+        }
+
+        ofs << items[i].id << '\t' << items[i].pid << '\t' << items[i].name << '\t' << items[i].comment << '\t' << 'N' << '\n';
     }
 
     return 0;
