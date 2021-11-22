@@ -201,12 +201,14 @@ void wxLogic::LoadTree() {
 
             item_id = ids_.at(j);
             wxString current_name = id_to_info_.at(item_id).name;
+            wxString current_comment = id_to_info_.at(item_id).comment;
+            ItemStatus current_status = id_to_info_.at(item_id).status;
 
             if (id_to_info_.at(item_id).status == ItemStatus::Archived) {
                 continue;
             }
 
-            CreateNewTreeItem(parent_item_ptr, current_name, item_info.comment, item_id, item_info.status);
+            CreateNewTreeItem(parent_item_ptr, current_name, current_comment, item_id, current_status);
 
             --i; // step back
         }
