@@ -70,6 +70,10 @@ int main() {
             new_comment.push_back(comment.back());
         }
 
+        if (!new_comment.empty() && new_comment[new_comment.size() - 1] == '\r') {
+            new_comment.erase(new_comment.size() - 1);
+        }
+
         tokens[5] = new_comment;
 
         items.push_back({ stoi(tokens[0]), stoi(tokens[1]), tokens[2], stoi(tokens[3]), tokens[4], tokens[5] });
@@ -80,8 +84,12 @@ int main() {
             items[i].id = items[i].mid;
             items[i].pid = items[items[i].pid].id;
         }
+    }
 
-        ofs << items[i].id << '\t' << items[i].pid << '\t' << items[i].name << '\t' << items[i].comment << '\t' << 'N' << '\n';
+    for (int i = 0; i < items.size(); ++i) {
+        if (items[i].marker == L"KDA") {
+            ofs << items[i].id << '\t' << items[i].pid << '\t' << items[i].name << '\t' << items[i].comment << '\t' << 'N' << '\n';
+        }
     }
 
     return 0;
