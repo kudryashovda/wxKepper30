@@ -16,7 +16,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 #if defined(__WINDOWS__)
     SetIcon(wxICON(icon)); // windows only. icon file mt be located
 #endif
-    pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | style_);
+    pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style_);
 
     treeCtrl = new wxTreeCtrl(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                               wxTR_DEFAULT_STYLE | wxTR_MULTIPLE | style_, wxDefaultValidator, wxTreeCtrlNameStr);
