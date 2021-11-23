@@ -8,9 +8,9 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 
 /* buttons and edits style */
 #if defined(__WINDOWS__)
-    style_ = wxNO_BORDER;
+    style_ = wxBORDER_NONE;
 #else
-    style_ = wxSTATIC_BORDER;
+    style_ = wxBORDER_SUNKEN;
 #endif
 
 #if defined(__WINDOWS__)
@@ -76,7 +76,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
                         wxTE_MULTILINE | style_, // wxTE_RICH
                         wxDefaultValidator, wxTextCtrlNameStr);
 
-    lblListName = new wxStaticText(pnl, wxID_ANY, "Attached objects", wxDefaultPosition, wxDefaultSize, style_);
+    lblListName = new wxStaticText(pnl, wxID_ANY, "Attached objects");
     lblListName->SetForegroundColour(labels_color);
     btnNewObject = new wxButton(pnl, wxID_ANY, "New File", wxDefaultPosition, wxDefaultSize, style_);
     btnaddObjectsToItem = new wxButton(pnl, wxID_ANY, "Add File", wxDefaultPosition, wxDefaultSize, style_);
