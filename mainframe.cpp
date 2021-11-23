@@ -55,6 +55,8 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     lblId = new wxStaticText(pnl, wxID_ANY, "");
     edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
+    edtId->SetEditable(false);
+    edtId->SetBackgroundColour(edtName->GetBackgroundColour());                           
     edtId->Refresh();
 
     idBarSizer = new wxBoxSizer(wxVERTICAL);
