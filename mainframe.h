@@ -25,7 +25,7 @@ private:
     wxPanel *pnl, *pnlCard;
     wxTreeCtrl* treeCtrl;
     wxButton *btnCut, *btnAdd, *btnDel, *btnSaveItemData, *btnSearch, *btnaddObjectsToItem, *btnDelObject,
-        *btnRenameObj, *btnNewObject, *btnGoto, *btnPhoto, *btnExport, *btnImport, *btnLink;
+        *btnRenameObj, *btnNewObject, *btnGoto;
     wxStaticText *lblName, *lblComtsName, *lblListName, *lblId;
     wxBoxSizer *borderSizer, *mainSizer, *leftSizer, *rightSizer, *nameBarSizer, *lblsBarSizer, *searchBarSizer,
         *idBarSizer;

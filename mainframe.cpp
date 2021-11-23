@@ -16,6 +16,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 #if defined(__WINDOWS__)
     SetIcon(wxICON(icon)); // windows only. icon file mt be located
 #endif
+    wxColor labels_color = wxColour(100,100,100);
     pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style_);
 
     treeCtrl = new wxTreeCtrl(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize,
@@ -41,6 +42,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     gsTopBtns->Add(btnDel, 1, wxEXPAND, 0);
 
     lblName = new wxStaticText(pnl, wxID_ANY, "Name:");
+    lblName->SetForegroundColour(labels_color);
     edtName = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | style_,
                              wxDefaultValidator, wxTextCtrlNameStr);
 
@@ -67,26 +69,24 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     lblsBarSizer->Add(idBarSizer, 0, wxEXPAND, 0);
 
     lblComtsName = new wxStaticText(pnl, wxID_ANY, "Comments");
+    lblComtsName->SetForegroundColour(labels_color);
     tc = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize,
                         wxTE_MULTILINE | style_, // wxTE_RICH
                         wxDefaultValidator, wxTextCtrlNameStr);
 
     lblListName = new wxStaticText(pnl, wxID_ANY, "Attached objects", wxDefaultPosition, wxDefaultSize, style_);
+    lblListName->SetForegroundColour(labels_color);
     btnNewObject = new wxButton(pnl, wxID_ANY, "New File", wxDefaultPosition, wxDefaultSize, style_);
-    btnaddObjectsToItem = new wxButton(pnl, wxID_ANY, "Add", wxDefaultPosition, wxDefaultSize, style_);
-    btnDelObject = new wxButton(pnl, wxID_ANY, "Delete", wxDefaultPosition, wxDefaultSize, style_);
-    btnRenameObj = new wxButton(pnl, wxID_ANY, "Rename", wxDefaultPosition, wxDefaultSize, style_);
-    btnPhoto = new wxButton(pnl, wxID_ANY, "Photo", wxDefaultPosition, wxDefaultSize, style_);
-    btnLink = new wxButton(pnl, wxID_ANY, "Link to...", wxDefaultPosition, wxDefaultSize, style_);
+    btnaddObjectsToItem = new wxButton(pnl, wxID_ANY, "Add File", wxDefaultPosition, wxDefaultSize, style_);
+    btnDelObject = new wxButton(pnl, wxID_ANY, "Delete File", wxDefaultPosition, wxDefaultSize, style_);
+    btnRenameObj = new wxButton(pnl, wxID_ANY, "Rename File", wxDefaultPosition, wxDefaultSize, style_);
 
-    gsObjBtns = new wxGridSizer(1, 6, 1, 1);
+    gsObjBtns = new wxGridSizer(1, 4, 1, 1);
 
     gsObjBtns->Add(btnNewObject, 1, wxEXPAND, 0);
     gsObjBtns->Add(btnaddObjectsToItem, 1, wxEXPAND, 0);
     gsObjBtns->Add(btnDelObject, 1, wxEXPAND, 0);
     gsObjBtns->Add(btnRenameObj, 1, wxEXPAND, 0);
-    gsObjBtns->Add(btnPhoto, 1, wxEXPAND, 0);
-    gsObjBtns->Add(btnLink, 1, wxEXPAND, 0);
 
     listBox = new wxListBox(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, style_);
 
@@ -126,9 +126,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 
     pnl->SetSizer(borderSizer);
 
-    mainSizer->Fit(this); // resize (fit) main window based on elements inside sizer
-
-    Centre(wxHORIZONTAL);
+    mainSizer->Fit(this);
 
     BindEvents();
 
@@ -185,8 +183,6 @@ void MainFrame::BindEvents() {
     btnaddObjectsToItem->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnaddObjectsToItem, this);
     btnDelObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnDelFile, this);
     btnRenameObj->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnRenameFile, this);
-    //    btnPhoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnPhoto, this);
-    //    btnLink->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressBtnLink, this);
 }
 
 void MainFrame::onPressbtnSaveItemData(wxCommandEvent& event) {

@@ -16,6 +16,7 @@ bool MyApp::OnInit() {
     const auto window_size = wxSize(1000, 800);
     frame->SetMinSize(window_size);
     frame->SetSize(window_size);
+    frame->Center();
 
     frame->Show(true);
 
