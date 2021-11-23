@@ -14,7 +14,9 @@ find_package(wxWidgets)
 # sudo apt install libwxbase*-dev libwxgtk*-dev
 
 set(wxWidgets_CONFIGURATION mswu)
-set(CMAKE_CXX_FLAGS "-mwindows")
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "-mwindows")
+endif (WIN32)
 
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} -lstdc++fs)
