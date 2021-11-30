@@ -54,6 +54,7 @@ public:
     void CopyFiles(wxTreeItemId item_ptr, const std::vector<fs::path>& paths);
     fs::path GetItemPath(const TreeItem& info);
     fs::path GetItemPath(wxTreeItemId item_ptr);
+    wxArrayTreeItemIds Search(std::wstring pattern);
 
 private:
     const fs::path workdir_ = fs::current_path();

@@ -334,3 +334,26 @@ void wxLogic::CopyFiles(wxTreeItemId item_ptr, const vector<fs::path>& paths) {
         fs::copy(path, dest_path);
     }
 }
+
+wxArrayTreeItemIds wxLogic::Search(wstring pattern) {
+    transform(pattern.begin(), pattern.end(), pattern.begin(), ::towlower);
+
+    wxArrayTreeItemIds results;
+
+    for (const auto&[id, info]: id_to_info_) {
+        wstring name(info.name);
+        wstring comment(info.comment);
+
+        transform(name.begin(), name.end(), name.begin(), ::towlower);
+        transform(comment.begin(), comment.end(), comment.begin(), ::towlower);
+
+        const auto pos_name = name.find(pattern);
+        const auto pos_comment = comment.find(pattern);
+
+        if (pos_name != wstring::npos || pos_comment != wstring::npos) {
+            results.push_back(info.wxitem);
+        }
+    }
+
+    return results;
+}
