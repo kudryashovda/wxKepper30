@@ -10,13 +10,13 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
 #if defined(__WINDOWS__)
     style_ = wxBORDER_NONE;
 #else
-    style_ = wxBORDER_SUNKEN;
+    style_ = wxSTATIC_BORDER;
 #endif
 
 #if defined(__WINDOWS__)
     SetIcon(wxICON(icon)); // windows only. icon file mt be located
 #endif
-    wxColor labels_color = wxColour(100,100,100);
+    wxColor labels_color = wxColour(100, 100, 100);
     pnl = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style_);
 
     treeCtrl = new wxTreeCtrl(pnl, wxID_ANY, wxDefaultPosition, wxDefaultSize,
