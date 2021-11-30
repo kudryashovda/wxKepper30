@@ -56,7 +56,7 @@ MainFrame::MainFrame(const wxString& title, wxLogic& logic)
     edtId = new wxTextCtrl(pnl, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, style_,
                            wxDefaultValidator, wxTextCtrlNameStr);
     edtId->SetEditable(false);
-    edtId->SetBackgroundColour(edtName->GetBackgroundColour());                           
+    edtId->SetBackgroundColour(edtName->GetBackgroundColour());
     edtId->Refresh();
 
     idBarSizer = new wxBoxSizer(wxVERTICAL);
@@ -179,6 +179,7 @@ void MainFrame::BindEvents() {
     btnCut->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCut, this);
     btnSaveItemData->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSaveItemData, this);
     btnGoto->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnGotoId, this);
+    btnSearch->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnSearch, this);
 
     listBox->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::onBoxItemDblClick, this);
     btnNewObject->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MainFrame::onPressbtnCreateFile, this);
@@ -538,4 +539,22 @@ void MainFrame::DuplicateItem(wxTreeItemId item) {
     const auto parent_item = logic_.GetParentTreeItemPtrById(item_info.id);
 
     logic_.AppendTreeItem(parent_item, item_info.name, item_info.comment);
+}
+
+void MainFrame::Search() {
+    const wxString pattern = edtSearch->GetValue();
+    const auto found = logic_.Search(pattern.ToStdWstring());
+    if (found.empty()) {
+        return;
+    }
+
+    for (const auto& tree_item : found) {
+        expandAllParents(tree_item);
+        treeCtrl->SelectItem(tree_item);
+        // treeCtrl->SetItemBackgroundColour(tree_item, wxColour(255, 255, 0));
+    }
+}
+
+void MainFrame::onPressbtnSearch(wxCommandEvent& event) {
+    Search();
 }

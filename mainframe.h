@@ -40,12 +40,11 @@ public:
     void OnBtnAddClick(wxCommandEvent& event);
     void onTreeItemClick(wxCommandEvent& event);
     void onTreeItemRightClick(wxTreeEvent& evt);
-    // void onPressbtnExport(wxCommandEvent& event);
-    // void onPressbtnImport(wxCommandEvent& event);
     void onPressbtnDel(wxCommandEvent& event);
     void onPressbtnCut(wxCommandEvent& event);
     void onPressbtnSaveItemData(wxCommandEvent& event);
     void onPressbtnGotoId(wxCommandEvent& event);
+    void onPressbtnSearch(wxCommandEvent& event);
 
     void onPressbtnCreateFile(wxCommandEvent& event);
     void onPressbtnaddObjectsToItem(wxCommandEvent& event);
@@ -62,6 +61,7 @@ public:
     void DuplicateItem(wxTreeItemId item);
     void expandAllParents(wxTreeItemId item);
     void UpdateFileBox(wxListBox* lbox);
+    void Search();
 };
 
 class DlgAppendItem : public wxDialog {
