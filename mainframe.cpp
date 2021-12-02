@@ -361,6 +361,9 @@ void MainFrame::onPressbtnGotoId(wxCommandEvent& event) {
 
 void MainFrame::onPressbtnCreateFile(wxCommandEvent& event) {
     const auto selected_item = treeCtrl->GetFocusedItem();
+    if (selected_item == treeCtrl->GetRootItem()) {
+        return;
+    }
 
     const wxString default_filename = "newfile.txt";
     wxTextEntryDialog dlg(this, "Enter filename", "Create empty text file", default_filename);
@@ -420,7 +423,6 @@ void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
 
     const auto path = GetFilenameFromListbox(selected_item, listBox);
     if (path.empty() || !exists(path)) {
-        wxMessageBox("No files found on disk", "Warning");
         return;
     }
 
@@ -442,7 +444,7 @@ void MainFrame::onPressbtnDelFile(wxCommandEvent& event) {
 
 void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
     wxTreeItemId item = treeCtrl->GetFocusedItem();
-    if (!item.IsOk()) {
+    if (!item.IsOk() || item == treeCtrl->GetRootItem()) {
         return;
     }
 
@@ -468,13 +470,12 @@ void MainFrame::onPressbtnaddObjectsToItem(wxCommandEvent& event) {
 
 void MainFrame::onPressbtnRenameFile(wxCommandEvent& event) {
     const auto selected_item = treeCtrl->GetFocusedItem();
-    if (!selected_item.IsOk()) {
+    if (!selected_item.IsOk() || selected_item == treeCtrl->GetRootItem()) {
         return;
     }
 
     const auto path = GetFilenameFromListbox(selected_item, listBox);
     if (path.empty() || !exists(path)) {
-        wxMessageBox("No files found on disk", "Warning");
         return;
     }
 
