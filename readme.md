@@ -1,13 +1,13 @@
-##Description
+## Description
 Simple but powerful application for keeping tasks, process and notes.
 Hierarchical approach makes it easy to structure items. Build in search feature 
 will help to find important note.
 
-##Screenshots
+## Screenshots
 ![](./screenshots/screenshot_main.png)
 ![](./screenshots/screenshot_new_item.png)
 
-##Build
+## Build
 The app uses wxWidgets library, so linux users have to install some packets like:
 ```
 sudo apt install libwxbase*-dev libwxgtk*-dev
@@ -23,9 +23,9 @@ cd build
 cmake ..
 make
 ```
-##Download binaries
+## Download binaries
 
 
-##License
+## License
 
 Licensed under GPL v3 license
