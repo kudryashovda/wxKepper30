@@ -1,3 +1,5 @@
+# wxKeeper
+
 ## Description
 Simple but powerful application for keeping tasks, process and notes.
 Hierarchical approach makes it easy to structure items. Build in search feature 
