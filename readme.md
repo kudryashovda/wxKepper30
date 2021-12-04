@@ -4,8 +4,8 @@ Hierarchical approach makes it easy to structure items. Build in search feature
 will help to find important note.
 
 ##Screenshots
-![](./screenshot/screenshot_main.png)
-![](./screenshot/screenshot_new_item.png)
+![](./screenshots/screenshot_main.png)
+![](./screenshots/screenshot_new_item.png)
 
 ##Build
 The app uses wxWidgets library, so linux users have to install some packets like:
