@@ -13,7 +13,7 @@ bool MyApp::OnInit() {
 
     const wxString title("Keeper");
     auto* frame = new MainFrame(title, logic);
-    const auto window_size = wxSize(1000, 800);
+    const auto window_size = wxSize(800, 600);
     frame->SetMinSize(window_size);
     frame->SetSize(window_size);
     frame->Center();
