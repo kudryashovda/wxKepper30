@@ -20,3 +20,6 @@ endif (WIN32)
 
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} -lstdc++fs)
+
+# uncomment when windows static build
+# target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} -lstdc++fs -static-libstdc++ -static-libgcc -static)
