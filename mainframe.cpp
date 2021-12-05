@@ -241,7 +241,7 @@ void MainFrame::AppendItems(const wxArrayTreeItemIds& selected_items, long count
     }
 
     DlgAppendItem dlg(this, wxID_ANY, "Add object", this->style_);
-    const auto dlg_size = wxSize(600, 600);
+    const auto dlg_size = wxSize(400, 400);
     dlg.SetMinSize(dlg_size);
     dlg.SetSize(dlg_size);
 
