@@ -28,7 +28,7 @@ make
 ## Download binaries
 Before start using the application please read term license agreement located inside zip file
 
-[Release 1.0](https://github.com/kudryashovda/wxKepper30/raw/master/releases/1.0/keep_win64_v1.0.zip)
+[Win64 Release 1.0](https://github.com/kudryashovda/wxKepper30/raw/master/releases/1.0/keep_win64_v1.0.zip)
 
 ## License
 
